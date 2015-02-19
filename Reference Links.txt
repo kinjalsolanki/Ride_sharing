@@ -1,0 +1,13 @@
+Tutorials i referred for creating asp.net web service:
+
+
+http://www.tutorialspoint.com/asp.net/asp.net_web_services.htm
+
+http://www.codeproject.com/Articles/337535/Understanding-the-Basics-of-Web-Service-in-ASP-NET
+
+http://www.c-sharpcorner.com/UploadFile/1d42da/web-service-basics/
+
+
+Video I referred for publishing web service:
+
+https://www.youtube.com/watch?v=Sje6qLfDqWg

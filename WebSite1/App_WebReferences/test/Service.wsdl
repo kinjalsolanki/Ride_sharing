@@ -95,10 +95,10 @@
   </wsdl:binding>
   <wsdl:service name="Service">
     <wsdl:port name="ServiceSoap" binding="tns:ServiceSoap">
-      <soap:address location="http://localhost:2574/WebServiceDemo/Service.asmx" />
+      <soap:address location="http://rideshare.somee.com/Service.asmx" />
     </wsdl:port>
     <wsdl:port name="ServiceSoap12" binding="tns:ServiceSoap12">
-      <soap12:address location="http://localhost:2574/WebServiceDemo/Service.asmx" />
+      <soap12:address location="http://rideshare.somee.com/Service.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
