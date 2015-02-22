@@ -11,3 +11,13 @@ http://www.c-sharpcorner.com/UploadFile/1d42da/web-service-basics/
 Video I referred for publishing web service:
 
 https://www.youtube.com/watch?v=Sje6qLfDqWg
+
+android tutorial:
+
+http://www.raywenderlich.com/78574/android-tutorial-for-beginners-part-1
+
+
+Android web service call:
+
+http://programmerguru.com/android-tutorial/how-to-call-asp-net-web-service-in-android/
+
