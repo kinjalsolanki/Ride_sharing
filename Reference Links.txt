@@ -21,3 +21,6 @@ Android web service call:
 
 http://programmerguru.com/android-tutorial/how-to-call-asp-net-web-service-in-android/
 
+http://developer.android.com/reference/android/os/AsyncTask.html
+
+http://rideshare.somee.com/Service.asmx?WSDL
