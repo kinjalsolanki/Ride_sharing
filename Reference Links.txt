@@ -1,11 +1,12 @@
 Tutorials i referred for creating asp.net web service:
 
-
 http://www.tutorialspoint.com/asp.net/asp.net_web_services.htm
 
 http://www.codeproject.com/Articles/337535/Understanding-the-Basics-of-Web-Service-in-ASP-NET
 
 http://www.c-sharpcorner.com/UploadFile/1d42da/web-service-basics/
+
+
 
 
 Video I referred for publishing web service:
@@ -17,6 +18,9 @@ android tutorial:
 http://www.raywenderlich.com/78574/android-tutorial-for-beginners-part-1
 
 
+
+
+
 Android web service call:
 
 http://programmerguru.com/android-tutorial/how-to-call-asp-net-web-service-in-android/
@@ -24,3 +28,27 @@ http://programmerguru.com/android-tutorial/how-to-call-asp-net-web-service-in-an
 http://developer.android.com/reference/android/os/AsyncTask.html
 
 http://rideshare.somee.com/Service.asmx?WSDL
+
+
+
+
+
+Google maps api:
+
+https://developers.google.com/maps/documentation/android/start
+
+http://stackoverflow.com/questions/12214467/how-to-obtain-signing-certificate-fingerprint-sha1-for-oauth-2-0-on-android
+
+http://developer.android.com/tools/publishing/app-signing.html
+
+http://stackoverflow.com/questions/20220262/google-map-sdk-map-set-up-authorization-failure-ensure-that-the-following-cor
+
+http://www.tutorialspoint.com/android/android_google_maps.htm
+
+
+
+
+GPS tracking:
+
+http://javapapers.com/android/android-show-current-location-on-map-using-google-maps-api/
+
