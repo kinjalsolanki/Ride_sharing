@@ -1,104 +1,113 @@
 package com.example.general.rideshare;
 
-import android.content.Context;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.*;
 
-import java.util.List;
-
-
-public class MainActivity extends ActionBarActivity implements LocationListener {
+public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
     GoogleMap googleMap;
-    protected LocationManager locationManager;
-    protected LocationListener locationListener;
-    protected Context context;
-    String lat;
-    double l1=0,l2=0;
-    String provider;
-    protected String latitude,longitude;
-    protected boolean gps_enabled,network_enabled;
-    Location location;
+    GoogleApiClient mGoogleApiClient;
+    Location mLastLocation;
+    TextView mLatitudeText, mLongitudeText;
+    Button source,dest;
+
+    double latitude=0,longitude=0;
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mLatitudeText =(TextView)findViewById(R.id.textView);
+        mLongitudeText=(TextView)findViewById(R.id.textView1);
+        source=(Button)findViewById(R.id.button);
+        dest=(Button)findViewById(R.id.button1);
+        source.setOnClickListener(this);
+        dest.setOnClickListener(this);
         createMapView();
         googleMap.setMyLocationEnabled(true);
-
-        Criteria criteria = new Criteria();
-        String bestProvider = locationManager.getBestProvider(criteria, true);
-        Location location = getLastKnownLocation();
-        if (location != null) {
-
-            onLocationChanged(location);
+        if (checkPlayServices()) {
+            buildGoogleApiClient();
         }
-        locationManager.requestLocationUpdates(bestProvider, 20000, 0, this);
+
 
     }
-
-
-    private Location getLastKnownLocation() {
-        locationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
-        List<String> providers = locationManager.getProviders(true);
-        Location bestLocation = null;
-        for (String provider : providers) {
-            Location l = locationManager.getLastKnownLocation(provider);
-            if (l == null) {
-                continue;
-            }
-            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-                // Found best last known location: %s", l);
-                bestLocation = l;
-            }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
         }
-        return bestLocation;
     }
 
     @Override
-    public void onProviderDisabled(String provider) {
-        Log.d("Latitude","disable");
+    protected void onResume() {
+        super.onResume();
+
+        checkPlayServices();
     }
 
-    @Override
-    public void onProviderEnabled(String provider) {
-        Log.d("Latitude","enable");
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
     }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.d("Latitude","status");
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil
+                .isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        "This device is not supported.", Toast.LENGTH_LONG)
+                        .show();
+                finish();
+            }
+            return false;
+        }
+        return true;
     }
+    private void displayLocation() {
 
-    @Override
-    public void onLocationChanged(Location location) {
-        System.out.println("inside location changed-------------------------------------------");
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
-        LatLng latLng = new LatLng(latitude, longitude);
-        googleMap.addMarker(new MarkerOptions().position(latLng).title("You are here"));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+        mLastLocation = LocationServices.FusedLocationApi
+                .getLastLocation(mGoogleApiClient);
 
+        if (mLastLocation != null) {
+             latitude = mLastLocation.getLatitude();
+             longitude = mLastLocation.getLongitude();
+
+            mLatitudeText.setText(latitude + ", " + longitude);
+
+        } else {
+
+            mLongitudeText
+                    .setText("(Couldn't get the location. Make sure location is enabled on the device)");
+        }
     }
-
     private void createMapView(){
         try {
             if(null == googleMap){
@@ -114,15 +123,6 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
         }
     }
 
-    private boolean isGooglePlayServicesAvailable() {
-        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        if (ConnectionResult.SUCCESS == status) {
-            return true;
-        } else {
-            GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
-            return false;
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -144,5 +144,38 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        displayLocation();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = "
+                + result.getErrorCode());
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch(v.getId()) {
+            case R.id.button:
+                LatLng latLng = new LatLng(latitude, longitude);
+                googleMap.addMarker(new MarkerOptions().position(latLng).title("You are here"));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                break;
+            case R.id.button1:
+                mLongitudeText.setText("Clicked button");
+                break;
+        }
+
     }
 }
