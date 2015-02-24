@@ -52,3 +52,7 @@ GPS tracking:
 
 http://javapapers.com/android/android-show-current-location-on-map-using-google-maps-api/
 
+https://developer.android.com/google/play-services/location.html
+
+http://www.androidhive.info/2015/02/android-location-api-using-google-play-services/
+
