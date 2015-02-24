@@ -1,6 +1,9 @@
 package com.example.general.rideshare;
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +24,9 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.util.List;
+
 public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
@@ -29,6 +35,8 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     Location mLastLocation;
     TextView mLatitudeText, mLongitudeText;
     Button source,dest;
+    MarkerOptions markerOptions;
+    LatLng latLng;
 
     double latitude=0,longitude=0;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
@@ -59,11 +67,9 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             mGoogleApiClient.connect();
         }
     }
-
     @Override
     protected void onResume() {
         super.onResume();
-
         checkPlayServices();
     }
 
@@ -123,7 +129,6 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -167,15 +172,69 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
         switch(v.getId()) {
             case R.id.button:
-                LatLng latLng = new LatLng(latitude, longitude);
+                latLng = new LatLng(latitude, longitude);
                 googleMap.addMarker(new MarkerOptions().position(latLng).title("You are here"));
                 googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                 googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 break;
             case R.id.button1:
-                mLongitudeText.setText("Clicked button");
+                String location = mLongitudeText.getText().toString();
+                if(location!=null && !location.equals("")){
+                    new GeocoderTask().execute(location);
+                }
                 break;
         }
 
+    }
+
+    private class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
+
+        @Override
+        protected List<Address> doInBackground(String... locationName) {
+            // Creating an instance of Geocoder class
+            Geocoder geocoder = new Geocoder(getBaseContext());
+            List<Address> addresses = null;
+
+            try {
+                // Getting a maximum of 3 Address that matches the input text
+                addresses = geocoder.getFromLocationName(locationName[0], 3);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return addresses;
+        }
+
+        @Override
+        protected void onPostExecute(List<Address> addresses) {
+
+            if(addresses==null || addresses.size()==0){
+                Toast.makeText(getBaseContext(), "No Location found", Toast.LENGTH_SHORT).show();
+            }
+
+            // Clears all the existing markers on the map
+            googleMap.clear();
+
+            // Adding Markers on Google Map for each matching address
+            for(int i=0;i<addresses.size();i++){
+
+                Address address = (Address) addresses.get(i);
+
+                // Creating an instance of GeoPoint, to display in Google Map
+                latLng = new LatLng(address.getLatitude(), address.getLongitude());
+
+                String addressText = String.format("%s, %s",
+                        address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
+                        address.getCountryName());
+
+                googleMap.addMarker(new MarkerOptions().position(latLng).title(addressText));
+
+                // Locate the first location
+                if(i==0) {
+                    //googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                    googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                }
+            }
+        }
     }
 }
