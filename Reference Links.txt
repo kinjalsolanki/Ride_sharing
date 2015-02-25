@@ -57,3 +57,12 @@ https://developer.android.com/google/play-services/location.html
 http://www.androidhive.info/2015/02/android-location-api-using-google-play-services/
 
 http://wptrafficanalyzer.in/blog/android-geocoding-showing-user-input-location-on-google-map-android-api-v2/
+
+
+
+
+Drawing routes:
+
+http://wptrafficanalyzer.in/blog/route-between-two-locations-with-waypoints-in-google-map-android-api-v2/
+
+https://developers.google.com/maps/documentation/directions/
