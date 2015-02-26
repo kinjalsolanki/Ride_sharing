@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Services;
 using System.Data.SqlClient;
+using System.Data;
 
 [WebService(Namespace = "http://tempuri.org/")]
 [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
@@ -41,4 +42,38 @@ public class Service1 : System.Web.Services.WebService
          scon.Close();
          return 0;
      }
+    [WebMethod]
+    public string returnRouteSD(String Source, String Dest)
+    {
+        String connectionString = "Data Source=.\\SQLEXPRESS;AttachDbFilename=C:\\Users\\Boss\\Documents\\Visual Studio 2010\\Projects\\WebService1\\WebService1\\App_Data\\Database1.mdf;Integrated Security=True;User Instance=True;";
+        SqlConnection scon = new SqlConnection(connectionString);
+        scon.Open();
+        String list = "select * from route_info where source_id='" + Source + "' and dest_id='" + Dest + "'";
+        SqlCommand command = new SqlCommand(list, scon);
+        SqlDataReader DR = command.ExecuteReader();
+        String loc = "";
+        while (DR.Read())
+        {
+            loc = DR["no_of_seats"].ToString()+DR["locations"].ToString()+"|";
+        }
+        DR.Close();
+        String list1 = "select * from route_info where locations like '%" + Source + "%' and dest_id='" + Dest + "'";
+        SqlCommand command1 = new SqlCommand(list1, scon);
+        SqlDataReader DR1 = command1.ExecuteReader();
+        while (DR1.Read())
+        {
+            loc = loc + DR1["no_of_seats"].ToString() + DR1["locations"].ToString()+"|";
+        }
+        DR1.Close();
+        String list2 = "select * from route_info where locations like '%" + Source + "%'and locations like '%"+Dest+"%'";
+        SqlCommand command2 = new SqlCommand(list2, scon);
+        SqlDataReader DR2 = command2.ExecuteReader();
+        while (DR2.Read())
+        {
+            loc = loc + DR2["no_of_seats"].ToString() + DR2["locations"].ToString();
+        }
+        DR2.Close();
+        scon.Close();
+        return loc;
+    }
 }
