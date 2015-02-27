@@ -3,3 +3,8 @@ c:\users\boss\documents\visual studio 2010\Projects\WebService1\WebService1\bin\
 c:\users\boss\documents\visual studio 2010\Projects\WebService1\WebService1\obj\Debug\WebService1.dll
 c:\users\boss\documents\visual studio 2010\Projects\WebService1\WebService1\obj\Debug\WebService1.pdb
 C:\Users\Boss\Documents\Visual Studio 2010\Projects\WebService1\WebService1\obj\Debug\WebService1.csprojResolveAssemblyReference.cache
+D:\kinjal\Ride_sharing\WebService1\WebService1\bin\WebService1.dll
+D:\kinjal\Ride_sharing\WebService1\WebService1\bin\WebService1.pdb
+D:\kinjal\Ride_sharing\WebService1\WebService1\obj\Debug\WebService1.csprojResolveAssemblyReference.cache
+D:\kinjal\Ride_sharing\WebService1\WebService1\obj\Debug\WebService1.dll
+D:\kinjal\Ride_sharing\WebService1\WebService1\obj\Debug\WebService1.pdb

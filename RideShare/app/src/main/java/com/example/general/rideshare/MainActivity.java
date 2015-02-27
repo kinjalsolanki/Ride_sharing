@@ -1,5 +1,7 @@
 package com.example.general.rideshare;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -50,9 +52,8 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     GoogleMap googleMap;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
-    TextView mLatitudeText, mLongitudeText;
+    TextView mLatitudeText;
     Button source,dest,path,createRt,searchRt;
-    MarkerOptions markerOptions;
     LatLng SlatLng, DlatLng;
     AutoCompleteTextView atvPlaces;
     PlacesTask placesTask;
@@ -164,7 +165,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
         } else {
 
-            mLongitudeText
+            mLatitudeText
                     .setText("(Couldn't get the location. Make sure location is enabled on the device)");
         }
     }
@@ -338,7 +339,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
 
     }
-
+    final Context context = this;
 
     private class AsyncSearchRouteWS extends AsyncTask<String, Void, Void> {
         @Override
@@ -351,7 +352,10 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         @Override
         protected void onPostExecute(Void result) {
             //Set response
-            mLatitudeText.setText(res);
+            //mLatitudeText.setText(res);
+            Intent intent = new Intent(context, SearchRoute.class);
+            intent.putExtra("routes",res);
+            startActivity(intent);
             //Make ProgressBar invisible
             //pg.setVisibility(View.INVISIBLE);
         }
@@ -565,8 +569,8 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
                 // Adding all the points in the route to LineOptions
 
-                System.out.println("--------------------------------------------------------points-----------------------------------------------------------");
-                System.out.println(points);
+               // System.out.println("--------------------------------------------------------points-----------------------------------------------------------");
+               // System.out.println(points);
                 lineOptions.addAll(points);
                 lineOptions.width(4);
                 lineOptions.color(Color.BLUE);

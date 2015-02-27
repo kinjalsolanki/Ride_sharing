@@ -9,8 +9,12 @@ import org.ksoap2.serialization.SoapPrimitive;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Set;
+
+import static java.lang.Math.round;
 
 /**
  * Created by General on 2/22/2015.
@@ -26,9 +30,27 @@ public class RouteSearchCall
     {
         // Create request
 
+        double slat=source.latitude;
+        double slon=source.longitude;
+
+        double dlat=destination.latitude;
+        double dlon=destination.longitude;
+
+        DecimalFormat formatter = new DecimalFormat("0.0000");
+        formatter.setRoundingMode(RoundingMode.DOWN);
+        slat=Double.parseDouble(formatter.format(slat));
+        slon=Double.parseDouble(formatter.format(slon));
+        dlat=Double.parseDouble(formatter.format(dlat));
+        dlon=Double.parseDouble(formatter.format(dlon));
+        //System.out.println("-----------------------------------------"+slat);
+
+        source=new LatLng(slat,slon);
+        destination=new LatLng(dlat,dlon);
+
+        System.out.println("-----------------------------------------"+source.toString()+"---------------------------"+destination.toString());
 
         SoapObject request = new SoapObject(NAMESPACE, webMethName);
-        String res="jhghj";
+        String res="";
         PropertyInfo addSource = new PropertyInfo();
         addSource.setName("Source");
         addSource.setValue(source.toString());
@@ -41,6 +63,7 @@ public class RouteSearchCall
         addDest.setType(String.class);
         request.addProperty(addDest);
 
+        System.out.println(source.toString()+"------------------------------"+destination.toString());
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                 SoapEnvelope.VER11);
         envelope.dotNet = true;
@@ -52,10 +75,14 @@ public class RouteSearchCall
 
         try {
             androidHttpTransport.call(SOAP_ACTION+webMethName, envelope);
-            SoapPrimitive response = (SoapPrimitive) envelope.getResponse();
+            Object response = envelope.getResponse();
+            //SoapPrimitive r=(SoapPrimitive) response.get;
+            //res=response.getProperty(0).toString();
             res=response.toString();
+            System.out.println(res);
 
         } catch (Exception e) {
+            res="Not done";
             e.printStackTrace();
         }
         return res;

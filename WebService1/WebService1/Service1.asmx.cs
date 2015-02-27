@@ -22,16 +22,6 @@ public class Service1 : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public string HelloWorld()
-    {
-        return "Hello World";
-    }
-    [WebMethod]
-    public int Multiplication(int a, int b)
-    {
-        return (a * b);
-    }
-    [WebMethod]
      public String createRoute(String User_id, String Source_id, String Dest_id, String Locations, int No_of_seats)
      {
          //String connectionString = "Data Source=.\\SQLEXPRESS;AttachDbFilename=C:\\Users\\Boss\\Documents\\Visual Studio 2010\\Projects\\WebService1\\WebService1\\App_Data\\Database1.mdf;Integrated Security=True;User Instance=True;";
@@ -47,11 +37,14 @@ public class Service1 : System.Web.Services.WebService
     [WebMethod]
     public string returnRouteSD(String Source, String Dest)
     {
+        String[] Sour = Source.Split(',');
+        String[] Desti = Dest.Split(',');
+
        // String connectionString = "Data Source=.\\SQLEXPRESS;AttachDbFilename=C:\\Users\\Boss\\Documents\\Visual Studio 2010\\Projects\\WebService1\\WebService1\\App_Data\\Database1.mdf;Integrated Security=True;User Instance=True;";
         //SqlConnection scon = new SqlConnection(connectionString);
         SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
         scon.Open();
-        String list = "select * from route_info where source_id='" + Source + "' and dest_id='" + Dest + "'";
+        String list = "select * from route_info where source_id like'" + Sour[0] + "%," + Sour[1].Substring(0, Sour[1].Length - 1) + "%' and dest_id like'" + Desti[0] + "%," + Desti[1].Substring(0, Desti[1].Length - 1) + "%'";
         SqlCommand command = new SqlCommand(list, scon);
         SqlDataReader DR = command.ExecuteReader();
         String loc = "";
@@ -60,7 +53,7 @@ public class Service1 : System.Web.Services.WebService
             loc = DR["no_of_seats"].ToString()+DR["locations"].ToString()+"|";
         }
         DR.Close();
-        String list1 = "select * from route_info where locations like '%" + Source + "%' and dest_id='" + Dest + "'";
+        String list1 = "select * from route_info where locations like '%" + Sour[0] + "%," + Sour[1].Substring(0, Sour[1].Length - 1) + "%' and dest_id like'" + Desti[0] + "%," + Desti[1].Substring(0, Desti[1].Length - 1) + "%'";
         SqlCommand command1 = new SqlCommand(list1, scon);
         SqlDataReader DR1 = command1.ExecuteReader();
         while (DR1.Read())
@@ -68,7 +61,7 @@ public class Service1 : System.Web.Services.WebService
             loc = loc + DR1["no_of_seats"].ToString() + DR1["locations"].ToString()+"|";
         }
         DR1.Close();
-        String list2 = "select * from route_info where locations like '%" + Source + "%'and locations like '%"+Dest+"%'";
+        String list2 = "select * from route_info where locations like '%" + Sour[0] + "%," + Sour[1].Substring(0, Sour[1].Length - 1) + "%' and locations like'%" + Desti[0] + "%," + Desti[1].Substring(0, Desti[1].Length - 1) + "%'";
         SqlCommand command2 = new SqlCommand(list2, scon);
         SqlDataReader DR2 = command2.ExecuteReader();
         while (DR2.Read())
