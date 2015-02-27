@@ -10,21 +10,13 @@
         android:id="@+id/textView"
         android:layout_alignParentTop="true" />
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="New Text...."
-        android:id="@+id/textView1"
-        android:layout_below="@+id/textView"
-        android:layout_marginTop="50dp"/>
-
     <fragment
         android:id="@+id/mapView"
         android:name="com.google.android.gms.maps.MapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/textView1"
-        android:layout_marginTop="30dp"/>
+        android:layout_marginTop="20dp"/>
 
     <Button
     android:layout_width="wrap_content"
@@ -52,6 +44,33 @@
         android:text="Get Path"
         android:id="@+id/button2"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Route"
+        android:id="@+id/button3"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"/>
+
+
+    <com.example.general.rideshare.CustomAutoCompleteTextView
+        android:id="@+id/textView1"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:singleLine="false"
+        android:hint="Enter place here"
+        android:layout_below="@+id/textView"
+        android:layout_marginTop="35dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Search"
+        android:id="@+id/button4"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
+
 
 </RelativeLayout>

@@ -7,11 +7,15 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,8 +36,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,9 +51,13 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     TextView mLatitudeText, mLongitudeText;
-    Button source,dest,path;
+    Button source,dest,path,createRt,searchRt;
     MarkerOptions markerOptions;
     LatLng SlatLng, DlatLng;
+    AutoCompleteTextView atvPlaces;
+    PlacesTask placesTask;
+    PlaceParserTask placeParserTask;
+    ArrayList<LatLng> points = null;
 
     double latitude=0,longitude=0;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
@@ -59,14 +69,40 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
 
         mLatitudeText =(TextView)findViewById(R.id.textView);
-        mLongitudeText=(TextView)findViewById(R.id.textView1);
+
         source=(Button)findViewById(R.id.button);
         dest=(Button)findViewById(R.id.button1);
         path=(Button) findViewById(R.id.button2);
+        createRt=(Button) findViewById(R.id.button3);
+        searchRt=(Button) findViewById(R.id.button4);
 
+        atvPlaces = (AutoCompleteTextView) findViewById(R.id.textView1);
+        atvPlaces.setThreshold(1);
         source.setOnClickListener(this);
         dest.setOnClickListener(this);
         path.setOnClickListener(this);
+        createRt.setOnClickListener(this);
+        searchRt.setOnClickListener(this);
+
+        atvPlaces.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                placesTask = new PlacesTask();
+                placesTask.execute(s.toString());
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+                // TODO Auto-generated method stub
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+                // TODO Auto-generated method stub
+            }
+        });
+
 
         createMapView();
         googleMap.setMyLocationEnabled(true);
@@ -96,6 +132,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 .addApi(LocationServices.API)
                 .build();
     }
+
     private boolean checkPlayServices() {
         int resultCode = GooglePlayServicesUtil
                 .isGooglePlayServicesAvailable(this);
@@ -113,6 +150,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
         return true;
     }
+
     private void displayLocation() {
 
         mLastLocation = LocationServices.FusedLocationApi
@@ -142,6 +180,60 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             }
         } catch (NullPointerException exception){
             Log.e("mapApp", exception.toString());
+        }
+    }
+
+    private class PlacesTask extends AsyncTask<String, Void, String>{
+
+        @Override
+        protected String doInBackground(String... place) {
+            // For storing data from web service
+            String data = "";
+
+            // Obtain browser key from https://code.google.com/apis/console
+            String key = "key=AIzaSyAvc17jSFhlXTUUe2vFchfoJc5F6bIb7yI";
+
+            String input="";
+
+            try {
+                input = "input=" + URLEncoder.encode(place[0], "utf-8");
+            } catch (UnsupportedEncodingException e1) {
+                e1.printStackTrace();
+            }
+
+            // place type to be searched
+            String types = "types=geocode";
+
+            // Sensor enabled
+            String sensor = "sensor=false";
+
+            // Building the parameters to the web service
+            String parameters = input+"&"+types+"&"+sensor+"&"+key;
+
+            // Output format
+            String output = "json";
+
+            // Building the url to the web service
+            String url = "https://maps.googleapis.com/maps/api/place/autocomplete/"+output+"?"+parameters;
+
+            try{
+                // Fetching the data from we service
+                data = downloadUrl(url);
+            }catch(Exception e){
+                Log.d("Background Task",e.toString());
+            }
+            return data;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            // Creating ParserTask
+            placeParserTask = new PlaceParserTask();
+
+            // Starting Parsing the JSON string returned by Web Service
+            placeParserTask.execute(result);
         }
     }
 
@@ -194,13 +286,83 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 break;
             case R.id.button1:
-                String location = mLongitudeText.getText().toString();
+                String location = atvPlaces.getText().toString();
                 if(location!=null && !location.equals("")){
                     new GeocoderTask().execute(location);
                 }
                 break;
             case R.id.button2:
                 getPath();
+                break;
+            case R.id.button3:
+                AsyncCallRouteCreateWS task = new AsyncCallRouteCreateWS();
+                //Call execute
+                task.execute();
+                break;
+            case R.id.button4:
+                AsyncSearchRouteWS task1 = new AsyncSearchRouteWS();
+                //Call execute
+                task1.execute();
+                break;
+        }
+
+    }
+
+
+    String res="";
+    private class AsyncCallRouteCreateWS extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            //Invoke webservice
+            res = RouteCreationCall.createRoute(points,SlatLng,DlatLng,"kinjal",2);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            //Set response
+            mLatitudeText.setText(res);
+            //Make ProgressBar invisible
+            //pg.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //Make ProgressBar invisible
+            //pg.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+
+    }
+
+
+    private class AsyncSearchRouteWS extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            //Invoke webservice
+            res = RouteSearchCall.returnRouteSD(SlatLng,DlatLng);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            //Set response
+            mLatitudeText.setText(res);
+            //Make ProgressBar invisible
+            //pg.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //Make ProgressBar invisible
+            //pg.setVisibility(View.VISIBLE);
+        }
+        @Override
+        protected void onProgressUpdate(Void... values) {
         }
 
     }
@@ -276,7 +438,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             br.close();
 
         }catch(Exception e){
-            Log.d("Exception while downloading url", e.toString());
+            Log.d("Exceptn downloading url", e.toString());
         }finally{
             iStream.close();
             urlConnection.disconnect();
@@ -317,6 +479,42 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     }
 
+    private class PlaceParserTask extends AsyncTask<String, Integer, List<HashMap<String,String>>>{
+
+        JSONObject jObject;
+
+        @Override
+        protected List<HashMap<String, String>> doInBackground(String... jsonData) {
+
+            List<HashMap<String, String>> places = null;
+
+            PlaceJSONParser placeJsonParser = new PlaceJSONParser();
+
+            try{
+                jObject = new JSONObject(jsonData[0]);
+
+                // Getting the parsed data as a List construct
+                places = placeJsonParser.parse(jObject);
+
+            }catch(Exception e){
+                Log.d("Exception",e.toString());
+            }
+            return places;
+        }
+
+        @Override
+        protected void onPostExecute(List<HashMap<String, String>> result) {
+
+            String[] from = new String[] { "description"};
+            int[] to = new int[] { android.R.id.text1 };
+
+            // Creating a SimpleAdapter for the AutoCompleteTextView
+            SimpleAdapter adapter = new SimpleAdapter(getBaseContext(), result, android.R.layout.simple_list_item_1, from, to);
+
+            // Setting the adapter
+            atvPlaces.setAdapter(adapter);
+        }
+    }
 
 
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
@@ -344,7 +542,6 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
 
-            ArrayList<LatLng> points = null;
             PolylineOptions lineOptions = null;
 
             // Traversing through all the routes
@@ -367,17 +564,18 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 }
 
                 // Adding all the points in the route to LineOptions
+
+                System.out.println("--------------------------------------------------------points-----------------------------------------------------------");
+                System.out.println(points);
                 lineOptions.addAll(points);
-                lineOptions.width(2);
-                lineOptions.color(Color.RED);
+                lineOptions.width(4);
+                lineOptions.color(Color.BLUE);
             }
 
             // Drawing polyline in the Google Map for the i-th route
             googleMap.addPolyline(lineOptions);
         }
     }
-
-
 
     private class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
 
