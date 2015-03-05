@@ -66,10 +66,19 @@ public class Service1 : System.Web.Services.WebService
         SqlDataReader DR2 = command2.ExecuteReader();
         while (DR2.Read())
         {
-            loc = loc + DR2["no_of_seats"].ToString() + DR2["locations"].ToString();
+            loc = loc + DR2["no_of_seats"].ToString() + DR2["locations"].ToString()+"|";
         }
         DR2.Close();
+        String list3 = "select * from route_info where source_id like '%" + Sour[0] + "%," + Sour[1].Substring(0, Sour[1].Length - 1) + "%' and locations like'%" + Desti[0] + "%," + Desti[1].Substring(0, Desti[1].Length - 1) + "%'";
+        SqlCommand command3 = new SqlCommand(list3, scon);
+        SqlDataReader DR3 = command3.ExecuteReader();
+        while (DR3.Read())
+        {
+            loc = loc + DR3["no_of_seats"].ToString() + DR3["locations"].ToString() + "|";
+        }
+        DR3.Close();
         scon.Close();
+        loc = loc.Substring(0,loc.Length-1);
         return loc;
     }
 }
