@@ -14,7 +14,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -27,10 +29,11 @@ public class SearchRoute extends ActionBarActivity {
 
     TextView tview;
     String routes;
-    ArrayList<LatLng> points;
+    String area;
+    List<LatLng> points;
     LatLng location;
     GoogleMap googleMap;
-
+    double destLat, destLon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +41,18 @@ public class SearchRoute extends ActionBarActivity {
         setContentView(R.layout.activity_search_route);
         Bundle bundle = getIntent().getExtras();
         routes = bundle.getString("routes");
-        tview=(TextView)findViewById(R.id.textView);
-        tview.setText(routes);
+        destLat=bundle.getDouble("destLat");
+        destLon=bundle.getDouble("destLon");
+        //area=bundle.getString("area");
+        //System.out.println("In searchroute:====================="+area);
+        //tview=(TextView)findViewById(R.id.textView);
+        //tview.setText(routes);
         createMapView();
 
         googleMap.setMyLocationEnabled(true);
 
         splitRoutes();
-        getPath();
+
     }
 
     private void createMapView(){
@@ -75,6 +82,7 @@ public class SearchRoute extends ActionBarActivity {
                 googleMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
                 googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 googleMap.addPolyline(lineOptions);
+
             }
 
         }
@@ -82,14 +90,17 @@ public class SearchRoute extends ActionBarActivity {
 
     private void splitRoutes() {
 
-        String allRoutes[]=routes.split("\\|");
-        points=new ArrayList<LatLng>();
+        String allRoutes[]=routes.split(" ");
+        System.out.println("Routes returned:::========================="+Arrays.toString(allRoutes));
         for(int i=0;i<allRoutes.length;i++)
         {
-            String routesArray[]=routes.split("lat/lng:");
+            System.out.println("inside foe================================="+i);
+            points=PolyUtil.decode(allRoutes[i].substring(1));
+            System.out.println("Decoded roue=================================="+i+"============="+points);
+           /* String routesArray[]=routes.split("lat/lng:");
             System.out.println("1-----------------"+Arrays.toString(routesArray));
 
-            for(int j=1;j<routesArray.length;j++)
+            for(int j=1;j<routesArray.length-1;j++)
             {
                 String singleLocation[]=routesArray[j].split(",");
                 System.out.println("2-----------------"+Arrays.toString(singleLocation)+"----------------"+singleLocation.length);
@@ -103,20 +114,30 @@ public class SearchRoute extends ActionBarActivity {
                             lon = singleLocation[1].substring(0, singleLocation[1].length() - 3);
                         System.out.println("4Latitude-------------------"+lat+"Longi------------------"+lon);
 
-                        double l1=Double.parseDouble(lat);
-                        double l2=Double.parseDouble(lon);
+                        double l1=0,l2=0;
+                        if(lat.matches("[0-9]{1,13}(\\.[0-9]*)?")) {
+                            l1=Double.parseDouble(lat);
+                        }
 
-                        location=new LatLng(l1,l2);
-                        points.add(location);
+                        if(lon.matches("[0-9]{1,13}(\\.[0-9]*)?")) {
+                            l2=Double.parseDouble(lon);
 
+                        }
+                        if(l1!=0 && l2!=0) {
+                            location = new LatLng(l1, l2);
+                            points.add(location);
+                        }
                 }
 
             }
+*/
+            LatLng l=new LatLng(destLat,destLon);
 
-            System.out.println(points.toString());
+            if(PolyUtil.isLocationOnPath(l,points,true,100))
+                getPath();
+            //System.out.println("extracted point===================================="+i+"============"+points.toString());
 
         }
-
 
     }
 

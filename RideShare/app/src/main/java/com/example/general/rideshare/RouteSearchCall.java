@@ -26,17 +26,17 @@ public class RouteSearchCall
     private static String SOAP_ACTION = "http://tempuri.org/";
     private static String webMethName="returnRouteSD";
 
-    public static String returnRouteSD(LatLng source, LatLng destination)
+    public static String returnRouteSD(String a)
     {
         // Create request
 
-        double slat=source.latitude;
+      /*  double slat=source.latitude;
         double slon=source.longitude;
 
         double dlat=destination.latitude;
         double dlon=destination.longitude;
 
-        DecimalFormat formatter = new DecimalFormat("0.0000");
+        DecimalFormat formatter = new DecimalFormat("0.000");
         formatter.setRoundingMode(RoundingMode.DOWN);
         slat=Double.parseDouble(formatter.format(slat));
         slon=Double.parseDouble(formatter.format(slon));
@@ -61,9 +61,18 @@ public class RouteSearchCall
         addDest.setName("Dest");
         addDest.setValue(destination.toString());
         addDest.setType(String.class);
-        request.addProperty(addDest);
+        request.addProperty(addDest);*/
 
-        System.out.println(source.toString()+"------------------------------"+destination.toString());
+        SoapObject request = new SoapObject(NAMESPACE, webMethName);
+        String res="";
+
+        PropertyInfo addArea = new PropertyInfo();
+        addArea.setName("Area");
+        addArea.setValue(a);
+        addArea.setType(String.class);
+        request.addProperty(addArea);
+
+       // System.out.println(source.toString()+"------------------------------"+destination.toString());
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                 SoapEnvelope.VER11);
         envelope.dotNet = true;
@@ -79,7 +88,7 @@ public class RouteSearchCall
             //SoapPrimitive r=(SoapPrimitive) response.get;
             //res=response.getProperty(0).toString();
             res=response.toString();
-            System.out.println(res);
+           // System.out.println("result from api call========================="+res);
 
         } catch (Exception e) {
             res="Not done";
