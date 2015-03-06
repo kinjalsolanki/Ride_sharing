@@ -45,6 +45,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
@@ -59,6 +60,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     PlacesTask placesTask;
     PlaceParserTask placeParserTask;
     ArrayList<LatLng> points = null;
+    ArrayList<String> area;
 
     double latitude=0,longitude=0;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
@@ -315,8 +317,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         @Override
         protected Void doInBackground(String... params) {
             //Invoke webservice
-            res = RouteCreationCall.createRoute(points,SlatLng,DlatLng,"kinjal",2);
-
+            res = RouteCreationCall.createRoute(points,SlatLng,DlatLng,"kinjal",2,area);
             return null;
         }
 
@@ -345,7 +346,10 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         @Override
         protected Void doInBackground(String... params) {
             //Invoke webservice
-            res = RouteSearchCall.returnRouteSD(SlatLng,DlatLng);
+
+            String a=getAddress(DlatLng.latitude,DlatLng.longitude);
+            res = RouteSearchCall.returnRouteSD(a);
+
             return null;
         }
 
@@ -355,6 +359,8 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             //mLatitudeText.setText(res);
             Intent intent = new Intent(context, SearchRoute.class);
             intent.putExtra("routes",res);
+            intent.putExtra("destLat",DlatLng.latitude);
+            intent.putExtra("destLon",DlatLng.longitude);
             startActivity(intent);
             //Make ProgressBar invisible
             //pg.setVisibility(View.INVISIBLE);
@@ -521,6 +527,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     }
 
 
+
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
 
         // Parsing the data in non-ui thread
@@ -551,6 +558,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             // Traversing through all the routes
             for(int i=0;i<result.size();i++){
                 points = new ArrayList<LatLng>();
+                area=new ArrayList<String>();
                 lineOptions = new PolylineOptions();
 
                 // Fetching i-th route
@@ -563,14 +571,19 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
-
+                    if(j%10==0) {
+                        String a = getAddress(lat, lng);
+                        System.out.println("Individual response:-------------------------------for--- "+j+"-------------" + a);
+                        if (!area.contains(a) && a.charAt(a.length() - 1) != '|')
+                            area.add(a);
+                    }
                     points.add(position);
                 }
 
                 // Adding all the points in the route to LineOptions
 
-               // System.out.println("--------------------------------------------------------points-----------------------------------------------------------");
-               // System.out.println(points);
+                System.out.println("--------------------------------------------------------points-----------------------------------------------------------");
+                System.out.println(area);
                 lineOptions.addAll(points);
                 lineOptions.width(4);
                 lineOptions.color(Color.BLUE);
@@ -581,6 +594,23 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     }
 
+    private String getAddress(double latitude, double longitude) {
+        StringBuilder result = new StringBuilder();
+        try {
+            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            if (addresses.size() > 0) {
+                Address address = addresses.get(0);
+                result.append(address.getSubLocality()).append("|");
+                if(address.getPostalCode()!=null)
+                    result.append(address.getPostalCode());
+            }
+        } catch (IOException e) {
+            Log.e("tag", e.getMessage());
+        }
+
+        return result.toString();
+    }
     private class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
 
         @Override
@@ -615,7 +645,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
                 // Creating an instance of GeoPoint, to display in Google Map
                 DlatLng = new LatLng(address.getLatitude(), address.getLongitude());
-
+                System.out.println("Destination location:-------------------------------------------------------------"+DlatLng.toString());
                 String addressText = String.format("%s, %s",
                         address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
                         address.getCountryName());

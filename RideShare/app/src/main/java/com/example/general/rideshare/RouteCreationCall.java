@@ -1,5 +1,6 @@
 package com.example.general.rideshare;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.PolyUtil;
 
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.PropertyInfo;
@@ -11,6 +12,7 @@ import org.ksoap2.transport.HttpTransportSE;
 import java.util.ArrayList;
 import java.util.Set;
 
+
 /**
  * Created by General on 2/22/2015.
  */
@@ -21,11 +23,9 @@ public class RouteCreationCall
     private static String SOAP_ACTION = "http://tempuri.org/";
     private static String webMethName="createRoute";
 
-    public static String createRoute(ArrayList<LatLng> points,LatLng source, LatLng destination,String userid,int seat)
+    public static String createRoute(ArrayList<LatLng> points,LatLng source, LatLng destination,String userid,int seat,ArrayList<String> area)
     {
         // Create request
-
-
         SoapObject request = new SoapObject(NAMESPACE, webMethName);
         String res="jhghj";
         PropertyInfo addUserid = new PropertyInfo();
@@ -33,7 +33,6 @@ public class RouteCreationCall
         addUserid.setValue(userid);
         addUserid.setType(String.class);
         request.addProperty(addUserid);
-
 
         PropertyInfo addSource = new PropertyInfo();
         addSource.setName("Source_id");
@@ -49,7 +48,7 @@ public class RouteCreationCall
 
         PropertyInfo addLocation = new PropertyInfo();
         addLocation.setName("Locations");
-        addLocation.setValue(points.toString());
+        addLocation.setValue(PolyUtil.encode(points));
         addLocation.setType(String.class);
         request.addProperty(addLocation);
 
@@ -59,17 +58,22 @@ public class RouteCreationCall
         addSeats.setType(int.class);
         request.addProperty(addSeats);
 
+        PropertyInfo addArea = new PropertyInfo();
+        addArea.setName("Areas");
+        addArea.setValue(area.toString());
+        addArea.setType(String.class);
+        request.addProperty(addArea);
+        System.out.println("-------------------------------------------------"+area.toString());
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                 SoapEnvelope.VER11);
         envelope.dotNet = true;
         // Set output SOAP object
         envelope.setOutputSoapObject(request);
         // Create HTTP call object
-
         //System.out.println("button clicked----ishq sava-----------------------------------------------------------------------------------------------------------");
 
-        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
 
+        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
         try {
             androidHttpTransport.call(SOAP_ACTION+webMethName, envelope);
             SoapPrimitive response = (SoapPrimitive) envelope.getResponse();
@@ -80,5 +84,4 @@ public class RouteCreationCall
         }
         return res;
     }
-
 }
