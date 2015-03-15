@@ -31,7 +31,7 @@ public class Service1 : System.Web.Services.WebService
         //SqlConnection scon = new SqlConnection(connectionString);
         SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
         scon.Open();
-        String ss = "INSERT into route_info (user_id,source_id,dest_id,locations,no_of_seats,areas,reg_id) VALUES('" + User_id + "','" + Source_id + "','" + Dest_id + "','" + Locations + "','" + No_of_seats + "','" + Areas + "','" + Reg_id + "')";
+        String ss = "INSERT into route_info (user_id,source_id,dest_id,locations,no_of_seats,areas,reg_id,other_users) VALUES('" + User_id + "','" + Source_id + "','" + Dest_id + "','" + Locations + "','" + No_of_seats + "','" + Areas + "','" + Reg_id + "','-')";
         SqlCommand cmd1 = new SqlCommand(ss, scon);
         cmd1.ExecuteNonQuery();
         System.Diagnostics.Debug.WriteLine("-----------------Areas--------------" + Areas);
@@ -78,21 +78,36 @@ public class Service1 : System.Web.Services.WebService
     }
 
     [WebMethod]
-    public String selectRoute(int RouteId, int Seats)
+    public String selectRoute(int RouteId, int Seats, String Uname, String Area)
     {
         SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
         scon.Open();
-        String list = "select no_of_seats,reg_id from route_info where route_id=" + RouteId;
+        String list = "select no_of_seats,reg_id,other_users from route_info where route_id=" + RouteId;
         int seats = 3;
         String reg_id = "";
+        String users = "";
         SqlCommand command1 = new SqlCommand(list, scon);
         SqlDataReader DR = command1.ExecuteReader();
         while (DR.Read())
         {
             seats = Int32.Parse(DR["no_of_seats"].ToString());
             reg_id = DR["reg_id"].ToString();
+            users = DR["other_users"].ToString();
         }
         DR.Close();
+
+        if (users == "-")
+        {
+            list = "update route_info set other_users='" + Uname + "' where route_id=" + RouteId;
+        }
+        else
+        {
+            list = "update route_info set other_users='" + users+","+Uname + "' where route_id=" + RouteId;
+        }
+
+        command1 = new SqlCommand(list, scon);
+        command1.ExecuteNonQuery();
+
         seats = seats - Seats;
 
         SendNotification(reg_id, "test notification..........yooo");
