@@ -19,32 +19,27 @@ import static java.lang.Math.round;
 /**
  * Created by General on 2/22/2015.
  */
-public class RouteSearchCall
+public class GetCurrentLocCall
 {
     private static String NAMESPACE = "http://tempuri.org/";
     private static String URL = "http://rideshare.somee.com/Service1.asmx";
     private static String SOAP_ACTION = "http://tempuri.org/";
-    private static String webMethName="returnRouteSD";
+    private static String webMethName="returnCurrentLocation";
 
-    public static String returnRouteSD(String a,int seat)
+    public static String getLocation(int rid)
     {
 
-        SoapObject request = new SoapObject(NAMESPACE, webMethName);
         String res="";
 
-        PropertyInfo addArea = new PropertyInfo();
-        addArea.setName("Area");
-        addArea.setValue(a);
-        addArea.setType(String.class);
-        request.addProperty(addArea);
+        SoapObject request = new SoapObject(NAMESPACE, webMethName);
+        PropertyInfo addUser = new PropertyInfo();
+        addUser.setName("Rid");
+        addUser.setValue(rid);
+        addUser.setType(int.class);
+        request.addProperty(addUser);
 
-        PropertyInfo addSeat = new PropertyInfo();
-        addSeat.setName("Seats");
-        addSeat.setValue(seat);
-        addSeat.setType(int.class);
-        request.addProperty(addSeat);
 
-       // System.out.println(source.toString()+"------------------------------"+destination.toString());
+        // System.out.println(source.toString()+"------------------------------"+destination.toString());
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                 SoapEnvelope.VER11);
         envelope.dotNet = true;
@@ -60,7 +55,7 @@ public class RouteSearchCall
             //SoapPrimitive r=(SoapPrimitive) response.get;
             //res=response.getProperty(0).toString();
             res=response.toString();
-           // System.out.println("result from api call========================="+res);
+            // System.out.println("result from api call========================="+res);
 
         } catch (Exception e) {
             res="Not done";

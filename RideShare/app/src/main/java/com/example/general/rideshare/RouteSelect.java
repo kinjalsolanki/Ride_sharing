@@ -19,24 +19,26 @@ import static java.lang.Math.round;
 /**
  * Created by General on 2/22/2015.
  */
-public class RouteSearchCall
+public class RouteSelect
 {
     private static String NAMESPACE = "http://tempuri.org/";
     private static String URL = "http://rideshare.somee.com/Service1.asmx";
     private static String SOAP_ACTION = "http://tempuri.org/";
-    private static String webMethName="returnRouteSD";
+    private static String webMethName="selectRoute";
 
-    public static String returnRouteSD(String a,int seat)
+    public static String selectRoute(int routeid,int seat, String area, String uname)
     {
-
         SoapObject request = new SoapObject(NAMESPACE, webMethName);
         String res="";
 
-        PropertyInfo addArea = new PropertyInfo();
-        addArea.setName("Area");
-        addArea.setValue(a);
-        addArea.setType(String.class);
-        request.addProperty(addArea);
+        PropertyInfo addId = new PropertyInfo();
+        addId.setName("RouteId");
+        addId.setValue(routeid);
+        addId.setType(int.class);
+        request.addProperty(addId);
+
+
+        System.out.println("route id:========================"+routeid);
 
         PropertyInfo addSeat = new PropertyInfo();
         addSeat.setName("Seats");
@@ -44,7 +46,33 @@ public class RouteSearchCall
         addSeat.setType(int.class);
         request.addProperty(addSeat);
 
-       // System.out.println(source.toString()+"------------------------------"+destination.toString());
+
+
+        System.out.println("seat:========================"+seat);
+
+
+        PropertyInfo addArea = new PropertyInfo();
+        addArea.setName("Area");
+        addArea.setValue(area);
+        addArea.setType(String.class);
+        request.addProperty(addArea);
+
+
+
+        System.out.println("area:========================"+area);
+
+
+        PropertyInfo addUser = new PropertyInfo();
+        addUser.setName("Uname");
+        addUser.setValue(uname);
+        addUser.setType(String.class);
+        request.addProperty(addUser);
+
+
+
+        System.out.println("name:========================"+uname);
+
+        // System.out.println(source.toString()+"------------------------------"+destination.toString());
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                 SoapEnvelope.VER11);
         envelope.dotNet = true;
@@ -60,7 +88,7 @@ public class RouteSearchCall
             //SoapPrimitive r=(SoapPrimitive) response.get;
             //res=response.getProperty(0).toString();
             res=response.toString();
-           // System.out.println("result from api call========================="+res);
+            // System.out.println("result from api call========================="+res);
 
         } catch (Exception e) {
             res="Not done";

@@ -5,4 +5,7 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_first_page">FirstPage</string>
     <string name="title_activity_search_route">SearchRoute</string>
+    <string name="title_activity_track_location">TrackLocation</string>
+    <string name="title_activity_show_current_loc">ShowCurrentLoc</string>
+    <string name="title_activity_login">LoginActivity</string>
 </resources>

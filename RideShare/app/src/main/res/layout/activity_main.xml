@@ -74,6 +74,13 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reco"
+        android:id="@+id/button5"
+        android:layout_above="@+id/button2"
+        android:layout_marginBottom="55dp" />
 
 
 </RelativeLayout>

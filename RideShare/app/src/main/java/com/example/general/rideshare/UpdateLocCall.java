@@ -19,32 +19,36 @@ import static java.lang.Math.round;
 /**
  * Created by General on 2/22/2015.
  */
-public class RouteSearchCall
+public class UpdateLocCall
 {
     private static String NAMESPACE = "http://tempuri.org/";
     private static String URL = "http://rideshare.somee.com/Service1.asmx";
     private static String SOAP_ACTION = "http://tempuri.org/";
-    private static String webMethName="returnRouteSD";
+    private static String webMethName="updateCurrentLoc";
 
-    public static String returnRouteSD(String a,int seat)
+    public static String updateLoc(double latitude,double longitude,String uname)
     {
 
         SoapObject request = new SoapObject(NAMESPACE, webMethName);
         String res="";
 
-        PropertyInfo addArea = new PropertyInfo();
-        addArea.setName("Area");
-        addArea.setValue(a);
-        addArea.setType(String.class);
-        request.addProperty(addArea);
+        String location="lat/lng: ("+latitude+","+longitude+")";
 
-        PropertyInfo addSeat = new PropertyInfo();
-        addSeat.setName("Seats");
-        addSeat.setValue(seat);
-        addSeat.setType(int.class);
-        request.addProperty(addSeat);
+        PropertyInfo addLoc = new PropertyInfo();
+        addLoc.setName("Loc");
+        addLoc.setValue(location);
+        addLoc.setType(String.class);
+        request.addProperty(addLoc);
 
-       // System.out.println(source.toString()+"------------------------------"+destination.toString());
+
+        PropertyInfo addUser = new PropertyInfo();
+        addUser.setName("Uname");
+        addUser.setValue(uname);
+        addUser.setType(String.class);
+        request.addProperty(addUser);
+
+
+        // System.out.println(source.toString()+"------------------------------"+destination.toString());
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                 SoapEnvelope.VER11);
         envelope.dotNet = true;
@@ -60,7 +64,7 @@ public class RouteSearchCall
             //SoapPrimitive r=(SoapPrimitive) response.get;
             //res=response.getProperty(0).toString();
             res=response.toString();
-           // System.out.println("result from api call========================="+res);
+            // System.out.println("result from api call========================="+res);
 
         } catch (Exception e) {
             res="Not done";

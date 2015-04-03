@@ -31,7 +31,7 @@ public class Service1 : System.Web.Services.WebService
         //SqlConnection scon = new SqlConnection(connectionString);
         SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
         scon.Open();
-        String ss = "INSERT into route_info (user_id,source_id,dest_id,locations,no_of_seats,areas,reg_id,other_users) VALUES('" + User_id + "','" + Source_id + "','" + Dest_id + "','" + Locations + "','" + No_of_seats + "','" + Areas + "','" + Reg_id + "','-')";
+        String ss = "INSERT into route_info (user_id,source_id,dest_id,locations,no_of_seats,areas,reg_id,other_users,current_location) VALUES('" + User_id + "','" + Source_id + "','" + Dest_id + "','" + Locations + "','" + No_of_seats + "','" + Areas + "','" + Reg_id + "','-','"+Source_id+"')";
         SqlCommand cmd1 = new SqlCommand(ss, scon);
         cmd1.ExecuteNonQuery();
         System.Diagnostics.Debug.WriteLine("-----------------Areas--------------" + Areas);
@@ -78,10 +78,129 @@ public class Service1 : System.Web.Services.WebService
     }
 
     [WebMethod]
+    public string returnOwnerRoutes(String Uname)
+    {
+        SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
+        scon.Open();
+        String list = "select * from route_info where user_id like '%" + Uname + "%'";
+        String loc = "";
+        SqlCommand command1 = new SqlCommand(list, scon);
+        SqlDataReader DR1 = command1.ExecuteReader();
+        while (DR1.Read())
+        {
+            loc = loc + DR1["route_id"].ToString() + "|" + DR1["source_id"].ToString() + "|" + DR1["dest_id"].ToString() + "|" + DR1["no_of_seats"].ToString() + "*";
+        }
+        scon.Close();
+        DR1.Close();
+        return loc;
+    }
+
+
+    [WebMethod]
+    public void endRide(int Rid)
+    {
+        SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
+        scon.Open();
+        String command = "delete from route_info where route_id=" + Rid;
+        SqlCommand command1 = new SqlCommand(command, scon);
+        command1.ExecuteNonQuery();
+        scon.Close();
+    }
+
+    [WebMethod]
+    public void leaveRide(int Rid,String Uname)
+    {
+        SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
+        scon.Open();
+        String user="";
+        String command = "select other_users from route_info where route_id="+Rid;
+        SqlCommand command1 = new SqlCommand(command, scon);
+        SqlDataReader DR1 = command1.ExecuteReader();
+        while (DR1.Read())
+        {
+            user = DR1["other_users"].ToString();  
+        }
+        DR1.Close();
+
+        String[] u = user.Split(',');
+        user = "";
+        int count = 1;
+        for (int i = 0; i < u.Length; i++)
+        {
+            if (!u[i].Equals(Uname))
+            {
+                user = user + u[i] + ",";
+                count++;
+            }
+        }
+
+        if (user.Equals(""))
+            user = "--";
+
+        command = "update route_info set other_users='" + user.Substring(0,user.Length-1) + "', no_of_seats="+(3-count)+" where route_id=" + Rid;
+        command1 = new SqlCommand(command, scon);
+        command1.ExecuteNonQuery();
+        
+        scon.Close();
+    }
+
+
+    [WebMethod]
+    public String RecommendedRoute()
+    {
+        SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
+        scon.Open();
+        String list = "SELECT m_area, count(*) as m_count FROM mine_info GROUP BY m_area ORDER BY m_count DESC";
+        SqlCommand command = new SqlCommand(list, scon);
+        SqlDataReader DR = command.ExecuteReader();
+        int dno = 2;
+        String ms = "";
+       /* String[] area_array = new String[3];
+        while (DR.Read() && dno >= 0)
+        {
+            area_array[dno] = DR["m_area"].ToString();
+            dno--;
+        }
+        DR.Close();
+        dno = 2;
+        while (dno >= 0 && area_array[dno] != null)
+        {
+            String list1 = "select distinct m_area, m_pin from mine_info where m_area='" + area_array[dno] + "'";
+            SqlCommand command1 = new SqlCommand(list1, scon);
+            SqlDataReader DR1 = command1.ExecuteReader();
+            while (DR1.Read())
+            {
+                ms = ms + DR1["m_area"] + "|" + DR1["m_pin"] + ",";
+
+            }
+            dno--;
+            DR1.Close();
+        }*/
+        while (DR.Read() && dno >= 0)
+        {
+            ms = ms + DR["m_area"] + ",";
+            dno--;
+        }
+
+        DR.Close();
+        scon.Close();
+        return ms;
+    }
+    
+
+
+    [WebMethod]
     public String selectRoute(int RouteId, int Seats, String Uname, String Area)
     {
         SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
         scon.Open();
+        String[] la = Area.Split('|');
+        int pin = Int32.Parse(la[1]);
+        String list1 = "insert into mine_info (m_area,m_pin) values ('"+la[0]+"','"+pin+"')";
+        SqlCommand command2 = new SqlCommand(list1, scon);
+        SqlDataReader DR1 = command2.ExecuteReader();
+        DR1.Close();
+
         String list = "select no_of_seats,reg_id,other_users from route_info where route_id=" + RouteId;
         int seats = 3;
         String reg_id = "";
@@ -118,6 +237,56 @@ public class Service1 : System.Web.Services.WebService
 
         scon.Close();
         return "Route Registered!";
+    }
+
+    [WebMethod]
+    public string returnCurrentLocation(int Rid)
+    {
+        SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
+        scon.Open();
+        String list = "select * from route_info where route_id="+Rid;
+        String loc = "";
+        SqlCommand command1 = new SqlCommand(list, scon);
+        SqlDataReader DR1 = command1.ExecuteReader();
+        while (DR1.Read())
+        {
+            loc = DR1["current_location"] + " "+DR1["locations"];
+        }
+        scon.Close();
+        DR1.Close();
+        return loc;
+    }
+
+
+    [WebMethod]
+    public string returnMyRoutes(String Uname)
+    {
+        SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
+        scon.Open();
+        String list = "select * from route_info where other_users like '%" + Uname + "%'";
+        String loc = "";
+        SqlCommand command1 = new SqlCommand(list, scon);
+        SqlDataReader DR1 = command1.ExecuteReader();
+        while (DR1.Read())
+        {
+            loc = loc + DR1["route_id"].ToString() +"|"+ DR1["source_id"].ToString() + "|"+DR1["dest_id"].ToString()+"|"+DR1["no_of_seats"].ToString()+"*";
+        }
+        scon.Close();
+        DR1.Close();
+        return loc;
+    }
+
+
+    [WebMethod]
+    public void updateCurrentLoc(String Loc, String Uname)
+    {
+        SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
+        scon.Open();
+        String list = "update route_info set current_location='"+Loc+"' where user_id='"+Uname+"'";
+        SqlCommand command1 = new SqlCommand(list, scon);
+        command1.ExecuteNonQuery();
+        scon.Close();
+
     }
 
     [WebMethod]

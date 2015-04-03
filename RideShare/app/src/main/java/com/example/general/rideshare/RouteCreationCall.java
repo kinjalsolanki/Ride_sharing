@@ -12,7 +12,6 @@ import org.ksoap2.transport.HttpTransportSE;
 import java.util.ArrayList;
 import java.util.Set;
 
-
 /**
  * Created by General on 2/22/2015.
  */
@@ -23,7 +22,7 @@ public class RouteCreationCall
     private static String SOAP_ACTION = "http://tempuri.org/";
     private static String webMethName="createRoute";
 
-    public static String createRoute(ArrayList<LatLng> points,LatLng source, LatLng destination,String userid,int seat,ArrayList<String> area)
+    public static String createRoute(ArrayList<LatLng> points,LatLng source, LatLng destination,String userid,int seat,ArrayList<String> area, String regId)
     {
         // Create request
         SoapObject request = new SoapObject(NAMESPACE, webMethName);
@@ -64,6 +63,15 @@ public class RouteCreationCall
         addArea.setType(String.class);
         request.addProperty(addArea);
         System.out.println("-------------------------------------------------"+area.toString());
+
+
+        PropertyInfo addReg = new PropertyInfo();
+        addReg.setName("Reg_id");
+        addReg.setValue(regId);
+        addReg.setType(String.class);
+        request.addProperty(addReg);
+
+
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                 SoapEnvelope.VER11);
         envelope.dotNet = true;

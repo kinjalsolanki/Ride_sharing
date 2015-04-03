@@ -13,6 +13,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
@@ -31,7 +32,9 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -54,30 +57,40 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     TextView mLatitudeText;
-    Button source,dest,path,createRt,searchRt;
-    LatLng SlatLng, DlatLng;
+    Button source, dest, path, createRt, searchRt, RecoRt;
+    LatLng SlatLng, DlatLng, MlatLng;
     AutoCompleteTextView atvPlaces;
     PlacesTask placesTask;
     PlaceParserTask placeParserTask;
     ArrayList<LatLng> points = null;
     ArrayList<String> area;
+    ArrayList<LatLng> rPoints=null;
+    String user_name = "user_name";
+    String rdistance, gdistance;
+    boolean recomm=false;
+    boolean flag=false;
 
-    double latitude=0,longitude=0;
+    double latitude = 0, longitude = 0;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    GoogleCloudMessaging gcm;
+    String regid;
+    String PROJECT_NUMBER = "762985634560";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mLatitudeText =(TextView)findViewById(R.id.textView);
+        mLatitudeText = (TextView) findViewById(R.id.textView);
 
-        source=(Button)findViewById(R.id.button);
-        dest=(Button)findViewById(R.id.button1);
-        path=(Button) findViewById(R.id.button2);
-        createRt=(Button) findViewById(R.id.button3);
-        searchRt=(Button) findViewById(R.id.button4);
+        source = (Button) findViewById(R.id.button);
+        dest = (Button) findViewById(R.id.button1);
+        path = (Button) findViewById(R.id.button2);
+        createRt = (Button) findViewById(R.id.button3);
+        searchRt = (Button) findViewById(R.id.button4);
+        RecoRt = (Button) findViewById(R.id.button5);
 
         atvPlaces = (AutoCompleteTextView) findViewById(R.id.textView1);
         atvPlaces.setThreshold(1);
@@ -86,6 +99,12 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         path.setOnClickListener(this);
         createRt.setOnClickListener(this);
         searchRt.setOnClickListener(this);
+        RecoRt.setOnClickListener(this);
+
+
+        Bundle b = getIntent().getExtras();
+        user_name = b.getString("email");
+        startService(new Intent(getBaseContext(), UpdateLocationService.class).putExtra("uname", user_name));
 
         atvPlaces.addTextChangedListener(new TextWatcher() {
 
@@ -100,21 +119,49 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                                           int after) {
                 // TODO Auto-generated method stub
             }
+
             @Override
             public void afterTextChanged(Editable s) {
                 // TODO Auto-generated method stub
             }
         });
 
-
         createMapView();
         googleMap.setMyLocationEnabled(true);
         if (checkPlayServices()) {
             buildGoogleApiClient();
         }
-
-
+        getRegId();
     }
+
+    public void getRegId() {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                String msg = "";
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(getApplicationContext());
+                    }
+                    regid = gcm.register(PROJECT_NUMBER);
+                    msg = "Device registered, registration ID=" + regid;
+                    Log.i("GCM", msg);
+
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+                }
+                return msg;
+            }
+
+            @Override
+            protected void onPostExecute(String msg) {
+                //etRegId.setText(msg + "\n");
+                System.out.println("Reg id=======================================" + msg);
+            }
+        }.execute(null, null, null);
+    }
+
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -122,6 +169,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             mGoogleApiClient.connect();
         }
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -160,8 +208,8 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 .getLastLocation(mGoogleApiClient);
 
         if (mLastLocation != null) {
-             latitude = mLastLocation.getLatitude();
-             longitude = mLastLocation.getLongitude();
+            latitude = mLastLocation.getLatitude();
+            longitude = mLastLocation.getLongitude();
 
             mLatitudeText.setText(latitude + ", " + longitude);
 
@@ -171,22 +219,23 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                     .setText("(Couldn't get the location. Make sure location is enabled on the device)");
         }
     }
-    private void createMapView(){
+
+    private void createMapView() {
         try {
-            if(null == googleMap){
+            if (null == googleMap) {
                 googleMap = ((MapFragment) getFragmentManager().findFragmentById(
                         R.id.mapView)).getMap();
-                if(null == googleMap) {
+                if (null == googleMap) {
                     Toast.makeText(getApplicationContext(),
                             "Error creating map", Toast.LENGTH_SHORT).show();
                 }
             }
-        } catch (NullPointerException exception){
+        } catch (NullPointerException exception) {
             Log.e("mapApp", exception.toString());
         }
     }
 
-    private class PlacesTask extends AsyncTask<String, Void, String>{
+    private class PlacesTask extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... place) {
@@ -196,7 +245,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             // Obtain browser key from https://code.google.com/apis/console
             String key = "key=AIzaSyAvc17jSFhlXTUUe2vFchfoJc5F6bIb7yI";
 
-            String input="";
+            String input = "";
 
             try {
                 input = "input=" + URLEncoder.encode(place[0], "utf-8");
@@ -211,19 +260,19 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             String sensor = "sensor=false";
 
             // Building the parameters to the web service
-            String parameters = input+"&"+types+"&"+sensor+"&"+key;
+            String parameters = input + "&" + types + "&" + sensor + "&" + key;
 
             // Output format
             String output = "json";
 
             // Building the url to the web service
-            String url = "https://maps.googleapis.com/maps/api/place/autocomplete/"+output+"?"+parameters;
+            String url = "https://maps.googleapis.com/maps/api/place/autocomplete/" + output + "?" + parameters;
 
-            try{
+            try {
                 // Fetching the data from we service
                 data = downloadUrl(url);
-            }catch(Exception e){
-                Log.d("Background Task",e.toString());
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
             }
             return data;
         }
@@ -242,24 +291,23 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_main_action, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (item.getTitle().equals("Track")) {
+            Intent i = new Intent(MainActivity.this, TrackLocation.class);
+            i.putExtra("uname", user_name);
+            startActivity(i);
         }
-
-        return super.onOptionsItemSelected(item);
+        if (item.getTitle().equals("Exit")) {
+            System.exit(0);
+        }
+        return true;
     }
 
     @Override
@@ -281,7 +329,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     @Override
     public void onClick(View v) {
 
-        switch(v.getId()) {
+        switch (v.getId()) {
             case R.id.button:
                 SlatLng = new LatLng(latitude, longitude);
                 googleMap.addMarker(new MarkerOptions().position(SlatLng).title("You are here"));
@@ -290,7 +338,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 break;
             case R.id.button1:
                 String location = atvPlaces.getText().toString();
-                if(location!=null && !location.equals("")){
+                if (location != null && !location.equals("")) {
                     new GeocoderTask().execute(location);
                 }
                 break;
@@ -307,17 +355,24 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 //Call execute
                 task1.execute();
                 break;
+            case R.id.button5:
+                recomm=true;
+                AsyncRecommendRouteWS task2 = new AsyncRecommendRouteWS();
+                task2.execute();
+                recomm=false;
+                break;
         }
 
     }
 
 
-    String res="";
+    String res = "";
+
     private class AsyncCallRouteCreateWS extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... params) {
             //Invoke webservice
-            res = RouteCreationCall.createRoute(points,SlatLng,DlatLng,"kinjal",2,area);
+            res = RouteCreationCall.createRoute(points, SlatLng, DlatLng, user_name, 2, area, regid);
             return null;
         }
 
@@ -325,6 +380,8 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         protected void onPostExecute(Void result) {
             //Set response
             mLatitudeText.setText(res);
+
+            startService(new Intent(getBaseContext(), UpdateLocationService.class).putExtra("uname", user_name));
             //Make ProgressBar invisible
             //pg.setVisibility(View.INVISIBLE);
         }
@@ -340,6 +397,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
 
     }
+
     final Context context = this;
 
     private class AsyncSearchRouteWS extends AsyncTask<String, Void, Void> {
@@ -347,9 +405,8 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         protected Void doInBackground(String... params) {
             //Invoke webservice
 
-            String a=getAddress(DlatLng.latitude,DlatLng.longitude);
-            res = RouteSearchCall.returnRouteSD(a);
-
+            String a = getAddress(DlatLng.latitude, DlatLng.longitude);
+            res = RouteSearchCall.returnRouteSD(a, 1);
             return null;
         }
 
@@ -358,9 +415,13 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             //Set response
             //mLatitudeText.setText(res);
             Intent intent = new Intent(context, SearchRoute.class);
-            intent.putExtra("routes",res);
-            intent.putExtra("destLat",DlatLng.latitude);
-            intent.putExtra("destLon",DlatLng.longitude);
+            intent.putExtra("routes", res);
+            intent.putExtra("destLat", DlatLng.latitude);
+            intent.putExtra("destLon", DlatLng.longitude);
+            intent.putExtra("sourceLat", SlatLng.latitude);
+            intent.putExtra("sourceLon", SlatLng.longitude);
+            intent.putExtra("uname", user_name);
+            intent.putExtra("seats", 1);
             startActivity(intent);
             //Make ProgressBar invisible
             //pg.setVisibility(View.INVISIBLE);
@@ -371,11 +432,60 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             //Make ProgressBar invisible
             //pg.setVisibility(View.VISIBLE);
         }
+
         @Override
         protected void onProgressUpdate(Void... values) {
         }
 
     }
+
+
+    private class AsyncRecommendRouteWS extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            //Invoke webservice
+
+            res = RouteRecommendation.RecommendedRoute();
+            System.out.println("Recommeneded areaaaa============================================="+res);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            String[] rr = res.split(",");
+            int i = 0;
+            while (i <= 2 && rr[i] != null &&!flag) {
+                String location = rr[i];
+                if (location != null && !location.equals("")) {
+                    System.out.println("locatttioHADFkJBVCLJBVLJ"+location);
+                    new GeocoderTask1().execute(location);
+                }
+                i++;
+            }
+            if(!flag)
+            {
+                getPath();
+            }
+            else
+            {
+                flag=false;
+            }
+
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //Make ProgressBar invisible
+            //pg.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+
+    }
+
 
     private void getPath() {
         String url = getDirectionsUrl(SlatLng, DlatLng);
@@ -385,14 +495,57 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         downloadTask.execute(url);
     }
 
+    private void getPath1() {
+        String url = getDirectionsUrl1(SlatLng, MlatLng,DlatLng);
+        DownloadTask downloadTask = new DownloadTask();
 
-    private String getDirectionsUrl(LatLng origin,LatLng dest){
+        // Start downloading json data from Google Directions API
+        downloadTask.execute(url);
+    }
+
+
+    private String getDirectionsUrl1(LatLng origin, LatLng midpt, LatLng dest) {
 
         // Origin of route
-        String str_origin = "origin="+origin.latitude+","+origin.longitude;
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
 
         // Destination of route
-        String str_dest = "destination="+dest.latitude+","+dest.longitude;
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+
+        // Sensor enabled
+        String sensor = "sensor=false";
+
+        // Waypoints
+        String waypoints = "waypoints=";
+     /*   for(int i=2;i<markerPoints.size();i++){
+            LatLng point  = (LatLng) markerPoints.get(i);
+            if(i==2)
+                waypoints = "waypoints=";
+            waypoints += point.latitude + "," + point.longitude + "|";
+        }*/
+
+        System.out.println("Midpoint........................................................"+midpt.toString());
+        waypoints += midpt.latitude + "," + midpt.longitude+"|";
+
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + waypoints;
+
+        // Output format
+        String output = "json";
+
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
+
+        return url;
+    }
+
+    private String getDirectionsUrl(LatLng origin, LatLng dest) {
+
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
 
         // Sensor enabled
         String sensor = "sensor=false";
@@ -407,22 +560,21 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }*/
 
         // Building the parameters to the web service
-        String parameters = str_origin+"&"+str_dest+"&"+sensor+"&"+waypoints;
+        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + waypoints;
 
         // Output format
         String output = "json";
 
         // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
 
         return url;
     }
-
-    private String downloadUrl(String strUrl) throws IOException{
+    private String downloadUrl(String strUrl) throws IOException {
         String data = "";
         InputStream iStream = null;
         HttpURLConnection urlConnection = null;
-        try{
+        try {
             URL url = new URL(strUrl);
 
             // Creating an http connection to communicate with url
@@ -436,10 +588,10 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
             BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
 
-            StringBuffer sb  = new StringBuffer();
+            StringBuffer sb = new StringBuffer();
 
             String line = "";
-            while( ( line = br.readLine())  != null){
+            while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
 
@@ -447,16 +599,16 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
             br.close();
 
-        }catch(Exception e){
+        } catch (Exception e) {
             Log.d("Exceptn downloading url", e.toString());
-        }finally{
+        } finally {
             iStream.close();
             urlConnection.disconnect();
         }
         return data;
     }
 
-    private class DownloadTask extends AsyncTask<String, Void, String>{
+    private class DownloadTask extends AsyncTask<String, Void, String> {
 
         // Downloading data in non-ui thread
         @Override
@@ -466,11 +618,11 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
             String data = "";
 
-            try{
+            try {
                 // Fetching the data from web service
                 data = downloadUrl(url[0]);
-            }catch(Exception e){
-                Log.d("Background Task",e.toString());
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
             }
             return data;
         }
@@ -489,7 +641,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     }
 
-    private class PlaceParserTask extends AsyncTask<String, Integer, List<HashMap<String,String>>>{
+    private class PlaceParserTask extends AsyncTask<String, Integer, List<HashMap<String, String>>> {
 
         JSONObject jObject;
 
@@ -500,14 +652,14 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
             PlaceJSONParser placeJsonParser = new PlaceJSONParser();
 
-            try{
+            try {
                 jObject = new JSONObject(jsonData[0]);
 
                 // Getting the parsed data as a List construct
                 places = placeJsonParser.parse(jObject);
 
-            }catch(Exception e){
-                Log.d("Exception",e.toString());
+            } catch (Exception e) {
+                Log.d("Exception", e.toString());
             }
             return places;
         }
@@ -515,8 +667,8 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         @Override
         protected void onPostExecute(List<HashMap<String, String>> result) {
 
-            String[] from = new String[] { "description"};
-            int[] to = new int[] { android.R.id.text1 };
+            String[] from = new String[]{"description"};
+            int[] to = new int[]{android.R.id.text1};
 
             // Creating a SimpleAdapter for the AutoCompleteTextView
             SimpleAdapter adapter = new SimpleAdapter(getBaseContext(), result, android.R.layout.simple_list_item_1, from, to);
@@ -526,9 +678,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     }
 
-
-
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
 
         // Parsing the data in non-ui thread
         @Override
@@ -537,13 +687,13 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             JSONObject jObject;
             List<List<HashMap<String, String>>> routes = null;
 
-            try{
+            try {
                 jObject = new JSONObject(jsonData[0]);
                 DirectionsJSONParser parser = new DirectionsJSONParser();
 
                 // Starts parsing data
                 routes = parser.parse(jObject);
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return routes;
@@ -556,43 +706,95 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             PolylineOptions lineOptions = null;
 
             // Traversing through all the routes
-            for(int i=0;i<result.size();i++){
+            for (int i = 0; i < result.size(); i++) {
                 points = new ArrayList<LatLng>();
-                area=new ArrayList<String>();
+                area = new ArrayList<String>();
                 lineOptions = new PolylineOptions();
 
                 // Fetching i-th route
                 List<HashMap<String, String>> path = result.get(i);
 
                 // Fetching all the points in i-th route
-                for(int j=0;j<path.size();j++){
-                    HashMap<String,String> point = path.get(j);
+                for (int j = 0; j < path.size(); j++) {
+                    HashMap<String, String> point = path.get(j);
+                    String distance=j+"";
+                    if(j==0){
+                        // Get distance from the list
+                        if(!recomm) {
+                            gdistance = (String) point.get("distance");
+                        }
+                        else{
+                            rdistance= (String) point.get("distance");
+                        }
 
+                        continue;
+                    }
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
-                    if(j%10==0) {
+                    if (j % 10 == 0) {
                         String a = getAddress(lat, lng);
-                        System.out.println("Individual response:-------------------------------for--- "+j+"-------------" + a);
+                        System.out.println("Individual response:-------------------------------for--- " + j + "-------------" + a);
                         if (!area.contains(a) && a.charAt(a.length() - 1) != '|')
                             area.add(a);
                     }
-                    points.add(position);
+                    if(!recomm)
+                        points.add(position);
+                    else
+                    {
+                        if(Double.parseDouble(rdistance)<=(Double.parseDouble(gdistance)+20)) {
+                            flag=true;
+
+                        }
+                        if(flag)
+                            rPoints.add(position);
+                    }
                 }
 
                 // Adding all the points in the route to LineOptions
 
+
                 System.out.println("--------------------------------------------------------points-----------------------------------------------------------");
-                System.out.println(area);
-                lineOptions.addAll(points);
+                System.out.println(rPoints);
+                if(!recomm)
+                    lineOptions.addAll(points);
+                else
+                {
+                    if(flag) {
+                        lineOptions.addAll(rPoints);
+                    }
+                }
                 lineOptions.width(4);
                 lineOptions.color(Color.BLUE);
+
             }
 
             // Drawing polyline in the Google Map for the i-th route
             googleMap.addPolyline(lineOptions);
+            /*try {
+                System.out.println("Distance............................................"+DirectionsJSONParser.jDistance.get("distance").toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }*/
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private String getAddress(double latitude, double longitude) {
         StringBuilder result = new StringBuilder();
@@ -602,7 +804,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             if (addresses.size() > 0) {
                 Address address = addresses.get(0);
                 result.append(address.getSubLocality()).append("|");
-                if(address.getPostalCode()!=null)
+                if (address.getPostalCode() != null)
                     result.append(address.getPostalCode());
             }
         } catch (IOException e) {
@@ -611,6 +813,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
         return result.toString();
     }
+
     private class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
 
         @Override
@@ -622,6 +825,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             try {
                 // Getting a maximum of 3 Address that matches the input text
                 addresses = geocoder.getFromLocationName(locationName[0], 3);
+                System.out.println("get path response...................." + addresses);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -631,7 +835,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         @Override
         protected void onPostExecute(List<Address> addresses) {
 
-            if(addresses==null || addresses.size()==0){
+            if (addresses == null || addresses.size() == 0) {
                 Toast.makeText(getBaseContext(), "No Location found", Toast.LENGTH_SHORT).show();
             }
 
@@ -639,13 +843,13 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             googleMap.clear();
 
             // Adding Markers on Google Map for each matching address
-            for(int i=0;i<addresses.size();i++){
+            for (int i = 0; i < addresses.size(); i++) {
 
                 Address address = (Address) addresses.get(i);
 
                 // Creating an instance of GeoPoint, to display in Google Map
                 DlatLng = new LatLng(address.getLatitude(), address.getLongitude());
-                System.out.println("Destination location:-------------------------------------------------------------"+DlatLng.toString());
+                System.out.println("Destination location:-------------------------------------------------------------" + DlatLng.toString());
                 String addressText = String.format("%s, %s",
                         address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
                         address.getCountryName());
@@ -653,12 +857,67 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 googleMap.addMarker(new MarkerOptions().position(DlatLng).title(addressText));
 
                 // Locate the first location
-                if(i==0) {
+                if (i == 0) {
                     //googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
                     googleMap.moveCamera(CameraUpdateFactory.newLatLng(DlatLng));
                     googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 }
             }
+        }
+    }
+
+    private class GeocoderTask1 extends AsyncTask<String, Void, List<Address>> {
+
+        @Override
+        protected List<Address> doInBackground(String... locationName) {
+            // Creating an instance of Geocoder class
+            Geocoder geocoder = new Geocoder(getBaseContext());
+            List<Address> addresses = null;
+
+            try {
+                // Getting a maximum of 3 Address that matches the input text
+                addresses = geocoder.getFromLocationName(locationName[0], 3);
+                System.out.println("Addresses.........................."+addresses);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("ikshvkjahbvskjbkflvjdsvbkjafdvblwkjevb;kwefjvbkqejfb;kefvbkejfv"+addresses.toString());
+            return addresses;
+        }
+
+        @Override
+        protected void onPostExecute(List<Address> addresses) {
+
+            if (addresses == null || addresses.size() == 0) {
+                Toast.makeText(getBaseContext(), "No Location found", Toast.LENGTH_SHORT).show();
+            }
+
+            // Clears all the existing markers on the map
+            googleMap.clear();
+
+            // Adding Markers on Google Map for each matching address
+            for (int i = 0; i < addresses.size(); i++) {
+
+                Address address = (Address) addresses.get(i);
+
+                // Creating an instance of GeoPoint, to display in Google Map
+                MlatLng = new LatLng(address.getLatitude(), address.getLongitude());
+                System.out.println("Midpoint location:-------------------------------------------------------------" + MlatLng.toString());
+                String addressText = String.format("%s, %s",
+                        address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
+                        address.getCountryName());
+
+                googleMap.addMarker(new MarkerOptions().position(MlatLng).title(addressText));
+
+                // Locate the first location
+                if (i == 0) {
+                    //googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(MlatLng));
+                    googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                }
+            }
+
+            getPath1();
         }
     }
 }
