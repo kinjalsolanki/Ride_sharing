@@ -13,3 +13,8 @@ C:\Users\Boss\Documents\GitHub\Yugma_Proj\Ride_sharing\WebService1\WebService1\b
 C:\Users\Boss\Documents\GitHub\Yugma_Proj\Ride_sharing\WebService1\WebService1\obj\Debug\WebService1.csprojResolveAssemblyReference.cache
 C:\Users\Boss\Documents\GitHub\Yugma_Proj\Ride_sharing\WebService1\WebService1\obj\Debug\WebService1.dll
 C:\Users\Boss\Documents\GitHub\Yugma_Proj\Ride_sharing\WebService1\WebService1\obj\Debug\WebService1.pdb
+G:\WebService1\WebService1\bin\WebService1.dll
+G:\WebService1\WebService1\bin\WebService1.pdb
+G:\WebService1\WebService1\obj\Debug\WebService1.csprojResolveAssemblyReference.cache
+G:\WebService1\WebService1\obj\Debug\WebService1.dll
+G:\WebService1\WebService1\obj\Debug\WebService1.pdb

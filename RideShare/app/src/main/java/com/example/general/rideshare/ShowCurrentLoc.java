@@ -15,6 +15,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -55,7 +56,7 @@ public class ShowCurrentLoc extends ActionBarActivity {
             buildGoogleApiClient();
         }
 
-        googleMap.addMarker(new MarkerOptions().position(location).title("Taxi is here!"));
+        googleMap.addMarker(new MarkerOptions().position(location).title("Taxi is here!").icon(BitmapDescriptorFactory.fromResource(R.drawable.taxi)));
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(location));
         googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 

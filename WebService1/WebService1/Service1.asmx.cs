@@ -25,6 +25,58 @@ public class Service1 : System.Web.Services.WebService
     }
 
     [WebMethod]
+    public void chatReg(String User_id, String Reg_id)
+    {
+        SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
+        scon.Open();
+        try
+        {
+            String ss = "INSERT into chat (u_id,reg_id) VALUES('" + User_id + "','" + Reg_id + "')";
+            SqlCommand cmd1 = new SqlCommand(ss, scon);
+        }
+        catch (Exception e)
+        { }
+        scon.Close();
+    }
+
+    [WebMethod]
+    public String fareShare(String Type, Double Dist)
+    {
+        int total=0;
+        int total1 = 0;
+        double r_dist=0;
+        String fs = "";
+        if (Type == "Rickshaw")
+        {
+            if (Dist <= 1.5)
+            {
+                total = 17;
+            }
+            else
+            {
+                r_dist = Dist - 1.5;
+                total = (Int32) Math.Round(17 + (r_dist * 10));
+            }
+        }
+        else
+        { 
+            if (Dist <= 1.5)
+            {
+                total = 21;
+            }
+            else
+            {
+                r_dist = Dist - 1.7;
+                total = (Int32)Math.Round(21 + (r_dist * 14));
+            }
+        }
+        total1 = (Int32)Math.Round(total + (0.2 * total));
+        fs = fs + total + "-" + total1;
+        return fs;
+    }
+
+
+    [WebMethod]
     public String createRoute(String User_id, String Source_id, String Dest_id, String Locations, int No_of_seats, String Areas, String Reg_id)
     {
         //String connectionString = "Data Source=.\\SQLEXPRESS;AttachDbFilename=C:\\Users\\Boss\\Documents\\Visual Studio 2010\\Projects\\WebService1\\WebService1\\App_Data\\Database1.mdf;Integrated Security=True;User Instance=True;";
@@ -195,7 +247,9 @@ public class Service1 : System.Web.Services.WebService
         SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
         scon.Open();
         String[] la = Area.Split('|');
-        int pin = Int32.Parse(la[1]);
+        int pin=0;
+        if(la[1]!="" && la[1]!=null)
+            pin = Int32.Parse(la[1]);
         String list1 = "insert into mine_info (m_area,m_pin) values ('"+la[0]+"','"+pin+"')";
         SqlCommand command2 = new SqlCommand(list1, scon);
         SqlDataReader DR1 = command2.ExecuteReader();

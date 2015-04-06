@@ -36,8 +36,6 @@ public class RouteSelect
         addId.setValue(routeid);
         addId.setType(int.class);
         request.addProperty(addId);
-
-
         System.out.println("route id:========================"+routeid);
 
         PropertyInfo addSeat = new PropertyInfo();
@@ -45,8 +43,6 @@ public class RouteSelect
         addSeat.setValue(seat);
         addSeat.setType(int.class);
         request.addProperty(addSeat);
-
-
 
         System.out.println("seat:========================"+seat);
 

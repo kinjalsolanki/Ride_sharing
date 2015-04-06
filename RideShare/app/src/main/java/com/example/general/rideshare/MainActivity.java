@@ -66,7 +66,8 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     ArrayList<String> area;
     ArrayList<LatLng> rPoints=null;
     String user_name = "user_name";
-    String rdistance, gdistance;
+    String rdistance="", gdistance="";
+    double googledistace=0;
     boolean recomm=false;
     boolean flag=false;
 
@@ -359,7 +360,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 recomm=true;
                 AsyncRecommendRouteWS task2 = new AsyncRecommendRouteWS();
                 task2.execute();
-                recomm=false;
+
                 break;
         }
 
@@ -454,11 +455,13 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         protected void onPostExecute(Void result) {
             String[] rr = res.split(",");
             int i = 0;
-            while (i <= 2 && rr[i] != null &&!flag) {
+            while (i <= 2 && rr[i] != null && !flag) {
                 String location = rr[i];
                 if (location != null && !location.equals("")) {
                     System.out.println("locatttioHADFkJBVCLJBVLJ"+location);
                     new GeocoderTask1().execute(location);
+                    if(flag)
+                        break;
                 }
                 i++;
             }
@@ -470,7 +473,6 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             {
                 flag=false;
             }
-
 
         }
 
@@ -490,7 +492,6 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     private void getPath() {
         String url = getDirectionsUrl(SlatLng, DlatLng);
         DownloadTask downloadTask = new DownloadTask();
-
         // Start downloading json data from Google Directions API
         downloadTask.execute(url);
     }
@@ -570,6 +571,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
         return url;
     }
+
     private String downloadUrl(String strUrl) throws IOException {
         String data = "";
         InputStream iStream = null;
@@ -708,6 +710,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             // Traversing through all the routes
             for (int i = 0; i < result.size(); i++) {
                 points = new ArrayList<LatLng>();
+                rPoints=new ArrayList<LatLng>();
                 area = new ArrayList<String>();
                 lineOptions = new PolylineOptions();
 
@@ -717,42 +720,60 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 // Fetching all the points in i-th route
                 for (int j = 0; j < path.size(); j++) {
                     HashMap<String, String> point = path.get(j);
-                    String distance=j+"";
+
                     if(j==0){
                         // Get distance from the list
                         if(!recomm) {
-                            gdistance = (String) point.get("distance");
+                            gdistance = (String) point.get("distance").split(" ")[0];
                         }
                         else{
-                            rdistance= (String) point.get("distance");
+                            rdistance= (String) point.get("distance").split(" ")[0];
                         }
 
                         continue;
                     }
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-                    if (j % 10 == 0) {
-                        String a = getAddress(lat, lng);
-                        System.out.println("Individual response:-------------------------------for--- " + j + "-------------" + a);
-                        if (!area.contains(a) && a.charAt(a.length() - 1) != '|')
-                            area.add(a);
-                    }
-                    if(!recomm)
-                        points.add(position);
-                    else
-                    {
-                        if(Double.parseDouble(rdistance)<=(Double.parseDouble(gdistance)+20)) {
-                            flag=true;
 
+
+                    if(rdistance!="" && gdistance!="")
+                    {
+                        if (Double.parseDouble(rdistance) <= (Double.parseDouble(gdistance) + 10)) {
+                            flag = true;
                         }
-                        if(flag)
-                            rPoints.add(position);
+                    }
+
+
+                    if((flag && recomm) || (!flag && !recomm)) {
+                        System.out.println("rdistance===============" + rdistance);
+                        System.out.println("gdistance==================" + gdistance);
+                        double lat = 0, lng = 0;
+                        if (point.get("lat") != null && point.get("lng") != null) {
+                            //  System.out.println("Latitude:" + point.get("lat"));
+                            //  System.out.println("Longitude:"+ point.get("lng"));
+                            lat = Double.parseDouble(point.get("lat"));
+                            lng = Double.parseDouble(point.get("lng"));
+                        }
+
+
+                        LatLng position = null;
+                        if (lat != 0 && lng != 0)
+                            position = new LatLng(lat, lng);
+                        if (j % 10 == 0) {
+                            String a = getAddress(lat, lng);
+                            System.out.println("Individual response:-------------------------------for--- " + j + "-------------" + a);
+                            if (!area.contains(a) && a.charAt(a.length() - 1) != '|')
+                                area.add(a);
+                        }
+                        if (!recomm) {
+                            if (position != null)
+                                points.add(position);
+                        } else {
+                            if (position != null)
+                                rPoints.add(position);
+                        }
                     }
                 }
 
                 // Adding all the points in the route to LineOptions
-
 
                 System.out.println("--------------------------------------------------------points-----------------------------------------------------------");
                 System.out.println(rPoints);
@@ -760,17 +781,20 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                     lineOptions.addAll(points);
                 else
                 {
-                    if(flag) {
+                    if(flag)
+                    {
                         lineOptions.addAll(rPoints);
+
                     }
                 }
                 lineOptions.width(4);
                 lineOptions.color(Color.BLUE);
-
             }
 
             // Drawing polyline in the Google Map for the i-th route
+            googleMap.clear();
             googleMap.addPolyline(lineOptions);
+
             /*try {
                 System.out.println("Distance............................................"+DirectionsJSONParser.jDistance.get("distance").toString());
             } catch (JSONException e) {
@@ -778,23 +802,6 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             }*/
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     private String getAddress(double latitude, double longitude) {
         StringBuilder result = new StringBuilder();

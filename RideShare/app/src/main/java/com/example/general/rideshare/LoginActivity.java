@@ -46,7 +46,6 @@ public class LoginActivity extends ActionBarActivity implements
                 .addScope(Plus.SCOPE_PLUS_LOGIN).build();
     }
 
-
     private boolean checkPlayServices() {
         int resultCode = GooglePlayServicesUtil
                 .isGooglePlayServicesAvailable(this);
@@ -64,7 +63,6 @@ public class LoginActivity extends ActionBarActivity implements
         }
         return true;
     }
-
 
     protected void onStart() {
         super.onStart();
@@ -135,10 +133,9 @@ public class LoginActivity extends ActionBarActivity implements
         mSignInClicked = false;
         String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
         Toast.makeText(this, email, Toast.LENGTH_LONG).show();
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        Intent intent = new Intent(LoginActivity.this, HomePage.class);
         intent.putExtra("email",email);
         startActivity(intent);
-
     }
 
     @Override
@@ -162,7 +159,6 @@ public class LoginActivity extends ActionBarActivity implements
     public void onConnectionSuspended(int cause) {
         mGoogleApiClient.connect();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

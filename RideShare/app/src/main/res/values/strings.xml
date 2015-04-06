@@ -8,4 +8,13 @@
     <string name="title_activity_track_location">TrackLocation</string>
     <string name="title_activity_show_current_loc">ShowCurrentLoc</string>
     <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_home_page">RIDE SHARE</string>
+    <string name="drawer_open">kai</string>
+    <string name="drawer_close">kaikai</string>
+    <string name="title_activity_google_route">GoogleRoute</string>
+    <string name="title_activity_get_information">GetInformation</string>
+    <string name="title_activity_recommended_route">RecommendedRoute</string>
+    <string name="title_activity_via_point_path">ViaPointPath</string>
+    <string name="title_activity_waypoint_path">WaypointPath</string>
+
 </resources>

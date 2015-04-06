@@ -88,6 +88,30 @@
             android:name=".MainActivity"
             android:label="@string/app_name" >
         </activity>
+        <activity
+            android:name=".HomePage"
+            android:label="@string/title_activity_home_page" >
+        </activity>
+        <activity
+            android:name=".GoogleRoute"
+            android:label="@string/title_activity_google_route" >
+        </activity>
+        <activity
+            android:name=".GetInformation"
+            android:label="@string/title_activity_get_information" >
+        </activity>
+        <activity
+            android:name=".RecommendedRoute"
+            android:label="@string/title_activity_recommended_route" >
+        </activity>
+        <activity
+            android:name=".ViaPointPath"
+            android:label="@string/title_activity_via_point_path" >
+        </activity>
+        <activity
+            android:name=".WaypointPath"
+            android:label="@string/title_activity_waypoint_path" >
+        </activity>
     </application>
 
 </manifest>

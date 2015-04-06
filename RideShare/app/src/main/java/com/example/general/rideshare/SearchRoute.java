@@ -13,6 +13,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,8 +48,14 @@ public class SearchRoute extends ActionBarActivity implements View.OnClickListen
     Button selectRoute;
     double destLat, destLon, sourceLat, sourceLon;
     String user_name="";
+    int red=100,green=100,blue=100;
     TextView t;
+    RadioButton r;
     int seat;
+    ScrollView sv;
+    LinearLayout ll;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,7 +67,9 @@ public class SearchRoute extends ActionBarActivity implements View.OnClickListen
         sourceLat=bundle.getDouble("sourceLat");
         sourceLon=bundle.getDouble("sourceLon");
         seat=bundle.getInt("seats");
+        ll=new LinearLayout(this);
         user_name=bundle.getString("uname");
+        sv=(ScrollView)findViewById(R.id.scrollView2);
         selectRoute=(Button) findViewById(R.id.button5);
         t=(TextView) findViewById(R.id.textView);
         selectRoute.setOnClickListener(this);
@@ -71,12 +83,15 @@ public class SearchRoute extends ActionBarActivity implements View.OnClickListen
             if(null == googleMap){
                 googleMap = ((MapFragment) getFragmentManager().findFragmentById(
                         R.id.mapView)).getMap();
-                if(null == googleMap) {
+                if(null == googleMap)
+                {
                     Toast.makeText(getApplicationContext(),
                             "Error creating map", Toast.LENGTH_SHORT).show();
                 }
             }
-        } catch (NullPointerException exception){
+        }
+        catch (NullPointerException exception)
+        {
             Log.e("mapApp", exception.toString());
         }
     }
@@ -89,7 +104,27 @@ public class SearchRoute extends ActionBarActivity implements View.OnClickListen
             if(points!=null) {
                 lineOptions.addAll(points);
                 lineOptions.width(4);
-                lineOptions.color(Color.RED);
+
+                red=red+10;
+                green=green-100;
+                blue=blue+150;
+
+                if(red<0 || red>255)
+                    red=100;
+
+                if(green<0 || green>255)
+                    green=100;
+
+                if(blue<0 || blue>255)
+                    blue=100;
+                lineOptions.color(Color.rgb(red,green,blue));
+
+                r=new RadioButton(this);
+                r.setText("Select this route"+red);
+                r.setTextColor(Color.rgb(red, green, blue));
+                r.setTag(route_id);
+                ll.addView(r);
+
                 googleMap.moveCamera(CameraUpdateFactory.newLatLng(points.get(0)));
                 googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 googleMap.addPolyline(lineOptions);
@@ -137,6 +172,7 @@ public class SearchRoute extends ActionBarActivity implements View.OnClickListen
             }
             //System.out.println("extracted point===================================="+i+"============"+points.toString());
         }
+        sv.addView(ll);
 
     }
 

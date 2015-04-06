@@ -1,0 +1,180 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.general.rideshare.GetInformation">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:id="@+id/ll1">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="From: "
+        android:id="@+id/textView4"
+        android:paddingBottom="15dp"
+        android:layout_weight="1"
+        android:paddingLeft="10dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="New Text"
+        android:paddingBottom="15dp"
+        android:id="@+id/from"
+        android:layout_weight="1"
+        android:layout_above="@+id/textView5"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/l2"
+        android:padding="10dp"
+        android:layout_below="@+id/ll1">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="To:"
+        android:paddingLeft="10dp"
+        android:paddingBottom="15dp"
+        android:id="@+id/textView5"
+        android:layout_weight="1"
+        android:layout_below="@+id/textView4"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="New Text"
+        android:paddingBottom="15dp"
+        android:id="@+id/to"
+        android:layout_weight="1"
+        android:layout_above="@+id/textView6"
+        android:layout_alignLeft="@+id/from"
+        android:layout_alignStart="@+id/from" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/l3"
+        android:padding="10dp"
+        android:layout_below="@+id/l2">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Vehicle:"
+        android:paddingLeft="10dp"
+        android:paddingBottom="15dp"
+        android:layout_weight="1"
+        android:id="@+id/textView6"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="New Text"
+        android:paddingBottom="15dp"
+        android:id="@+id/vehicle"
+        android:layout_weight="1"
+        android:layout_above="@+id/textView7"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/l4"
+        android:padding="10dp"
+        android:layout_below="@+id/l3">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Approximate Fare:"
+        android:paddingLeft="10dp"
+        android:id="@+id/textView7"
+        android:paddingBottom="15dp"
+        android:layout_weight="1"
+        android:layout_below="@+id/textView6"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="New Text"
+        android:paddingBottom="15dp"
+        android:id="@+id/fare"
+        android:layout_weight="1"
+        android:layout_below="@+id/vehicle"
+        android:layout_alignLeft="@+id/vehicle"
+        android:layout_alignStart="@+id/vehicle" />
+</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/l5"
+        android:padding="10dp"
+        android:layout_below="@+id/l4">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="No. of seats:"
+        android:id="@+id/textView8"
+        android:layout_weight="1"
+        android:paddingLeft="10dp"
+        android:paddingBottom="15dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/textView7"
+        android:layout_alignEnd="@+id/textView7"
+        android:layout_below="@+id/textView7" />
+
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/editText"
+        android:paddingBottom="15dp"
+        android:layout_weight="1"
+        android:layout_alignTop="@+id/textView8"
+        android:layout_alignRight="@+id/fare"
+        android:layout_alignEnd="@+id/fare" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ll2"
+        android:background="#000000"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create This Ride"
+            android:id="@+id/createRoute"
+            android:layout_weight="1"
+            android:tag="createRoute"
+            android:background="#000000"
+            android:textColor="#cccccc"
+            android:layout_gravity="bottom" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>
