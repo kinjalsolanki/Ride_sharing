@@ -112,6 +112,10 @@
             android:name=".WaypointPath"
             android:label="@string/title_activity_waypoint_path" >
         </activity>
+        <activity
+            android:name=".SearchRouteDisplay"
+            android:label="@string/title_activity_search_route_display" >
+        </activity>
     </application>
 
 </manifest>

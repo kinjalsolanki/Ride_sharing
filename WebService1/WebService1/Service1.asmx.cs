@@ -238,11 +238,29 @@ public class Service1 : System.Web.Services.WebService
         scon.Close();
         return ms;
     }
-    
-
 
     [WebMethod]
-    public String selectRoute(int RouteId, int Seats, String Uname, String Area)
+    public String getRideUsers(int RouteId)
+    {
+        String res = "";
+        SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
+        scon.Open();
+        String query = "select * from user_info where route_id=" + RouteId;
+        SqlCommand command = new SqlCommand(query, scon);
+        SqlDataReader DR1 = command.ExecuteReader();
+
+        while (DR1.Read())
+        {
+            res = res + DR1["u_source"] +"|";
+        }
+
+
+        scon.Close();
+        return res;
+    }
+
+    [WebMethod]
+    public String selectRoute(int RouteId, int Seats, String Uname, String Area,String Source, String Dest)
     {
         SqlConnection scon = new SqlConnection(ConfigurationManager.ConnectionStrings["RouteDatabase"].ConnectionString);
         scon.Open();
@@ -254,6 +272,11 @@ public class Service1 : System.Web.Services.WebService
         SqlCommand command2 = new SqlCommand(list1, scon);
         SqlDataReader DR1 = command2.ExecuteReader();
         DR1.Close();
+
+        String list2 = "insert into user_info (route_id, u_source, u_dest) values ('" +RouteId+ "','" +Source + "','"+Dest+"')";
+        SqlCommand command3 = new SqlCommand(list2, scon);
+        SqlDataReader DR2 = command3.ExecuteReader();
+        DR2.Close();
 
         String list = "select no_of_seats,reg_id,other_users from route_info where route_id=" + RouteId;
         int seats = 3;
@@ -363,4 +386,6 @@ public class Service1 : System.Web.Services.WebService
         //loc = loc.Substring(0,loc.Length-1);
         return loc;
     }
+
+
 }

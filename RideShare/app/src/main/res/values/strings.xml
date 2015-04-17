@@ -16,5 +16,6 @@
     <string name="title_activity_recommended_route">RecommendedRoute</string>
     <string name="title_activity_via_point_path">ViaPointPath</string>
     <string name="title_activity_waypoint_path">WaypointPath</string>
+    <string name="title_activity_search_route_display">SearchRouteDisplay</string>
 
 </resources>

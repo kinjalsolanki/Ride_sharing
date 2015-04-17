@@ -287,6 +287,7 @@ public class GoogleRoute extends ActionBarActivity implements View.OnClickListen
 
             System.out.println("--------------------------------------------------------points-----------------------------------------------------------");
             System.out.println(points);
+            if(points!=null)
             lineOptions.addAll(points);
             lineOptions.width(4);
             lineOptions.color(Color.BLUE);

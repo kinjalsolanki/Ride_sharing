@@ -10,7 +10,7 @@ import org.json.JSONObject;
 
 import com.google.android.gms.maps.model.LatLng;
 
-public class DirectionsJSONParser {
+public class DirectionsJSONParser1 {
 
 
 
@@ -35,20 +35,14 @@ public class DirectionsJSONParser {
                 /** Traversing all legs */
                 for(int j=0;j<jLegs.length();j++){
 
-                    jDistance = ((JSONObject) jLegs.get(j)).getJSONObject("distance");
-
-                    if(hmDistance.containsKey("distance")) {
-                        double d=Double.parseDouble(hmDistance.get("distance"));
-                        d=d+Double.parseDouble(jDistance.getString("text").split(" ")[0]);
-                        System.out.println("Added distance"+d);
-                        hmDistance.put("distance",d+"");
-                    }
-                    else {
+                    if(j==1)
+                    {
+                        jDistance = ((JSONObject) jLegs.get(j)).getJSONObject("distance");
                         hmDistance.put("distance", jDistance.getString("text").split(" ")[0]);
                     }
                     path.add(hmDistance);
                     /** Adding distance object to the path
-                    path.add(hmDistance);*/
+                     path.add(hmDistance);*/
 
                     jSteps = ( (JSONObject)jLegs.get(j)).getJSONArray("steps");
 

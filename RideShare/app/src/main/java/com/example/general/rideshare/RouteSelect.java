@@ -26,7 +26,7 @@ public class RouteSelect
     private static String SOAP_ACTION = "http://tempuri.org/";
     private static String webMethName="selectRoute";
 
-    public static String selectRoute(int routeid,int seat, String area, String uname)
+    public static String selectRoute(int routeid,int seat, String area, String uname, String source, String dest)
     {
         SoapObject request = new SoapObject(NAMESPACE, webMethName);
         String res="";
@@ -64,7 +64,17 @@ public class RouteSelect
         addUser.setType(String.class);
         request.addProperty(addUser);
 
+        PropertyInfo addSource = new PropertyInfo();
+        addSource.setName("Source");
+        addSource.setValue(source);
+        addSource.setType(String.class);
+        request.addProperty(addSource);
 
+        PropertyInfo addDest = new PropertyInfo();
+        addDest.setName("Dest");
+        addDest.setValue(dest);
+        addDest.setType(String.class);
+        request.addProperty(addDest);
 
         System.out.println("name:========================"+uname);
 

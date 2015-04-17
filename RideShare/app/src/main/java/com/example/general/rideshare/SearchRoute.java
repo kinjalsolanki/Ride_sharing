@@ -235,7 +235,7 @@ public class SearchRoute extends ActionBarActivity implements View.OnClickListen
             int rid=Integer.parseInt(route_id);
             System.out.println("route id======================================="+rid);
             String area=getAddress(sourceLat,sourceLon);
-            res = RouteSelect.selectRoute(rid,seat,area,user_name);
+            //res = RouteSelect.selectRoute(rid,seat,area,user_name);
 
             return null;
         }

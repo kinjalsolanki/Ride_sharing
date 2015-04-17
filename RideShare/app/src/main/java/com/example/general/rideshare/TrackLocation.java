@@ -99,7 +99,7 @@ public class TrackLocation extends ActionBarActivity implements View.OnClickList
         l.addView(tv);
 
         Button btn = new Button(this);
-        btn.setText("Track User");
+        btn.setText("Track Taxi");
         btn.setTag("Track");
         btn.setId(Integer.parseInt(route_id));
         btn.setOnClickListener(this);
@@ -145,6 +145,14 @@ public class TrackLocation extends ActionBarActivity implements View.OnClickList
         l.addView(tv);
 
         Button btn = new Button(this);
+        btn.setText("Track User");
+        btn.setTag("Track");
+        btn.setId(Integer.parseInt(route_id));
+        btn.setOnClickListener(this);
+        l.addView(btn);
+
+
+        btn = new Button(this);
         btn.setText("End Ride");
         btn.setTag("End");
         btn.setId(Integer.parseInt(route_id));
@@ -336,6 +344,7 @@ public class TrackLocation extends ActionBarActivity implements View.OnClickList
 
             Intent i = new Intent(TrackLocation.this,ShowCurrentLoc.class);
             i.putExtra("latlng",split[1]);
+            i.putExtra("rid",routeid);
             i.putExtra("path",split[2]);
             startActivity(i);
         }

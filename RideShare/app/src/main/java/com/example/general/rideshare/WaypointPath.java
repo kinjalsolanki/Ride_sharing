@@ -316,6 +316,7 @@ public class WaypointPath extends ActionBarActivity implements View.OnClickListe
 
                 if(j==0){
                     // Get distance from the list
+                    System.out.println("distance......."+point.get("distance").toString());
                     gdistance = (String) point.get("distance").split(" ")[0];
                     continue;
                 }

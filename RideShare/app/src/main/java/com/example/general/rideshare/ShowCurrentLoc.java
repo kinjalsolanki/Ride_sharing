@@ -1,6 +1,8 @@
 package com.example.general.rideshare;
 
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +23,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -30,6 +33,7 @@ public class ShowCurrentLoc extends ActionBarActivity {
     List<LatLng> points;
     GoogleMap googleMap;
     GoogleApiClient mGoogleApiClient;
+    int rid;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
 
@@ -41,7 +45,7 @@ public class ShowCurrentLoc extends ActionBarActivity {
         Bundle bundle = getIntent().getExtras();
         String l=bundle.getString("latlng");
         String p=bundle.getString("path");
-
+        rid=bundle.getInt("rid");
         String[] loc=l.split(",");
         double lat=Double.parseDouble(loc[0].substring(1));
         double lon=Double.parseDouble(loc[1].substring(0,loc[1].length()-2));
@@ -56,13 +60,59 @@ public class ShowCurrentLoc extends ActionBarActivity {
             buildGoogleApiClient();
         }
 
-        googleMap.addMarker(new MarkerOptions().position(location).title("Taxi is here!").icon(BitmapDescriptorFactory.fromResource(R.drawable.taxi)));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(location));
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-
-        getPath();
+        AsyncCallFareShareWS task=new AsyncCallFareShareWS();
+        task.execute();
 
     }
+
+
+    String res="";
+    List<LatLng> users;
+    LatLng loc1;
+    private class AsyncCallFareShareWS extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            //Invoke webservice
+            res = GetRideUserCall.getUsers(rid);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+           users=new ArrayList<LatLng>();
+           String sp[]=res.split("\\|");
+            for(int i=0;i<sp.length-1;i++)
+            {
+                String[] loc=sp[i].split(" ")[1].split(",");
+                double lat=Double.parseDouble(loc[0].substring(1));
+                double lon=Double.parseDouble(loc[1].substring(0,loc[1].length()-2));
+                loc1=new LatLng(lat,lon);
+
+
+                googleMap.addMarker(new MarkerOptions().position(location).title("Ride sharer here!").icon(BitmapDescriptorFactory.fromResource(R.drawable.taxi)));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+                googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+            }
+
+            googleMap.addMarker(new MarkerOptions().position(location).title("Taxi is here!").icon(BitmapDescriptorFactory.fromResource(R.drawable.taxi)));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+            googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+
+            getPath();
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //Make ProgressBar invisible
+            //pg.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+
+    }
+
 
 
     private void getPath() {

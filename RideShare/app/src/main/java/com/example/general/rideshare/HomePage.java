@@ -2,6 +2,7 @@ package com.example.general.rideshare;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -641,7 +642,63 @@ public class HomePage extends ActionBarActivity implements View.OnClickListener,
 
         }
 
+        if(v.getTag().toString().equals("searchRoute"))
+        {
+            if (sLatLng != null && dLatLng != null) {
+                AsyncSearchRouteWS task1 = new AsyncSearchRouteWS();
+                task1.execute();
+            }
+            else
+            {
+                Toast.makeText(getBaseContext(), "Please Enter Source and Destination", Toast.LENGTH_SHORT).show();
+            }
+        }
+
     }
+
+
+    final Context context = this;
+    String res="";
+    private class AsyncSearchRouteWS extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            //Invoke webservice
+
+            String a = getAddress(dLatLng.latitude, dLatLng.longitude);
+            res = RouteSearchCall.returnRouteSD(a, 1);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            //Set response
+            //mLatitudeText.setText(res);
+            Intent intent = new Intent(context, SearchRouteDisplay.class);
+            intent.putExtra("routes", res);
+            intent.putExtra("destLat", dLatLng.latitude);
+            intent.putExtra("destLon", dLatLng.longitude);
+            intent.putExtra("sourceLat", sLatLng.latitude);
+            intent.putExtra("sourceLon", sLatLng.longitude);
+            intent.putExtra("vehicle",vehicleType);
+            intent.putExtra("uname", user_name);
+            intent.putExtra("seats", 1);
+            startActivity(intent);
+            //Make ProgressBar invisible
+            //pg.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //Make ProgressBar invisible
+            //pg.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+
+    }
+
 
 
 
@@ -1001,17 +1058,4 @@ public class HomePage extends ActionBarActivity implements View.OnClickListener,
             }
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
